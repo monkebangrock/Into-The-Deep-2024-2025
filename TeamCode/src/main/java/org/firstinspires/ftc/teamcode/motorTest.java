@@ -10,6 +10,7 @@ public class motorTest extends LinearOpMode{
     @Override
     public void runOpMode() {
         motorTest = hardwareMap.get(DcMotor.class, "motorTest");
+        motorTest.setPower(0);
         telemetry.addData("Status", "Initialized");
         telemetry.update();
         // Wait for the game to start (driver presses PLAY)
@@ -17,7 +18,7 @@ public class motorTest extends LinearOpMode{
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-            motorTest.setPower(0.5);
+            motorTest.setPower(0.7);
             telemetry.addData("Status", "Running");
             telemetry.update();
 
