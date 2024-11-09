@@ -79,6 +79,8 @@ public class Main_2024 extends LinearOpMode {
     private DcMotorEx slideL = null;
     int slideTarget;
     boolean slideMoving;
+    int slideLevel;
+    boolean slideInput;
 
     @Override
     public void runOpMode() {
@@ -105,8 +107,15 @@ public class Main_2024 extends LinearOpMode {
         rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         slideR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         slideL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        //slide stuff
+        slideR.setTargetPosition(0);
+        slideL.setTargetPosition(0);
+        slideR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        slideL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         slideTarget = 0;
         slideMoving = false;
+        slideLevel = 0;
+        slideInput = false;
 
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
@@ -137,7 +146,6 @@ public class Main_2024 extends LinearOpMode {
         rightBackDrive.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-
             double y = -(gamepad1.left_stick_y); // Remember, Y stick value is reversed
             double x = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
             double rx = gamepad1.right_stick_x;
@@ -154,59 +162,71 @@ public class Main_2024 extends LinearOpMode {
             rightBackDrive.setPower(rightBackPower*200);
 
             // Show the elapsed game time and wheel power.
+
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontPower, rightFrontPower);
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
             telemetry.update();
 
-            if (gamepad2.left_stick_y > 0) {
-                slide(gamepad2.left_stick_y);
-                telemetry.addData("extend ", gamepad1.left_stick_y);
-                telemetry.addData("SlideR", slideR.getCurrentPosition());
-                telemetry.addData("SlideL", slideL.getCurrentPosition());
-                telemetry.update();
-            } else if (gamepad2.left_stick_y < 0) {
-                slide(gamepad2.left_stick_y);
-                telemetry.addData("retract ", gamepad1.left_stick_y);
-                telemetry.addData("SlideR", slideR.getCurrentPosition());
-                telemetry.addData("SlideL", slideL.getCurrentPosition());
-                telemetry.update();
-            } else {
-                slide(0);
-                telemetry.addData("SlideR", slideR.getCurrentPosition());
-                telemetry.addData("SlideL", slideL.getCurrentPosition());
-                telemetry.update();
-            }
+            slide();
         }
     }
 
-        public void slide(double slideAmount){
-            slideR.setTargetPosition(slideTarget);
-            slideL.setTargetPosition(slideTarget);
-            slideR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            slideL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            slideR.setVelocity(5000);
-            slideL.setVelocity(5000);
-            if (gamepad2.left_stick_y < 0) {
-                // Go UP
-                slideTarget += (int) (-slideAmount * 300);
-                if (slideTarget < 900) {
-                    slideTarget = 900;
+    public void slide(){
+        if (!slideInput){ //slide input true is dpad clicked
+            if (gamepad2.dpad_up) { //when up on dpad is pressed
+                slideInput = true;
+                if(slideLevel == 0){ //low basket
+                    slideR.setVelocity(5000);
+                    slideL.setVelocity(5000);
+                    slideTarget = 1360;
+                    slideR.setTargetPosition(slideTarget);
+                    slideL.setTargetPosition(slideTarget);
+                    slideLevel = 1;
+                    telemetry.addData("level","1");
+                    telemetry.update();
                 }
-                slideMoving = true;
-            } else if (gamepad2.left_stick_y > 0) {
-                // Go DOWN
-                slideTarget += (int) (-slideAmount * 300);
-                if (slideTarget > 0) {
+                else if(slideLevel == 1){ //high basket
+                    slideTarget = 2750;
+                    slideR.setTargetPosition(slideTarget);
+                    slideL.setTargetPosition(slideTarget);
+                    slideLevel = 2;
+                    telemetry.addData("level","2");
+                    telemetry.update();
+                }
+            }
+            else if(gamepad2.dpad_down){
+                slideInput = true;
+                if(slideLevel == 2){ //low basket
+                    slideTarget = 1360;
+                    slideR.setTargetPosition(slideTarget);
+                    slideL.setTargetPosition(slideTarget);
+                    slideLevel = 1;
+                    telemetry.addData("level","1");
+                    telemetry.update();
+                }
+                else if(slideLevel == 1){ //down
                     slideTarget = 0;
+                    slideR.setTargetPosition(slideTarget);
+                    slideL.setTargetPosition(slideTarget);
+                    slideLevel = 0;
+                    telemetry.addData("level","0");
+                    telemetry.update();
                 }
-                slideMoving = true;
-            } else if (slideMoving) {
-                slideTarget = slideR.getCurrentPosition();
-                slideMoving = false;
-                // STOP
-                //upDown.setVelocity(0);
-                //Do nothing for now - holding position
+            }
+        }
+        else {
+            if (!gamepad2.dpad_down && !gamepad2.dpad_up){ //when arrow button (dpad up/down) is released
+                slideInput = false;
+                if(slideR.getCurrentPosition() < 10 && slideTarget == 0){
+                    slideR.setVelocity(0);
+                    slideL.setVelocity(0);
+                }
+                telemetry.addData("Right position:", slideR.getCurrentPosition());
+                telemetry.addData("Left position:", slideL.getCurrentPosition());
+                telemetry.addData("velocity", slideR.getVelocity());
+                telemetry.update();
             }
         }
     }
+}
