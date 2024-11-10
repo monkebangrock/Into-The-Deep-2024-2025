@@ -34,7 +34,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public final class TuningOpModes {
-    public static final Class<?> DRIVE_CLASS = SparkFunOTOSDrive.class;
+    public static final Class<?> DRIVE_CLASS = MecanumDrive.class;  //SparkFunOTOSDrive.class;
 
     public static final String GROUP = "quickstart";
     public static final boolean DISABLED = false;
