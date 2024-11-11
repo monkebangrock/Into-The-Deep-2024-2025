@@ -63,14 +63,14 @@ public class MecanumDrive {
                 RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
 
         // drive model parameters
-        public double inPerTick = 1; // SparkFun OTOS Note: you can probably leave this at 1
-        public double lateralInPerTick = inPerTick;
-        public double trackWidthTicks = 0;
+        public double inPerTick = 100.0/3230.0; // SparkFun OTOS Note: you can probably leave this at 1
+        public double lateralInPerTick = 100.0/3050.0; //inPerTick;
+        public double trackWidthTicks = 972.7002639535633;
 
         // feedforward parameters (in tick units)
-        public double kS = 0;
-        public double kV = 0;
-        public double kA = 0;
+        public double kS = 1.3;
+        public double kV = 0.004;
+        public double kA = 0.0005;
 
         // path profile parameters (in inches)
         public double maxWheelVel = 50;
@@ -82,9 +82,9 @@ public class MecanumDrive {
         public double maxAngAccel = Math.PI;
 
         // path controller gains
-        public double axialGain = 0.0;
-        public double lateralGain = 0.0;
-        public double headingGain = 0.0; // shared with turn
+        public double axialGain = 12.0;
+        public double lateralGain = 2.5;
+        public double headingGain = 1.8; // shared with turn
 
         public double axialVelGain = 0.0;
         public double lateralVelGain = 0.0;
