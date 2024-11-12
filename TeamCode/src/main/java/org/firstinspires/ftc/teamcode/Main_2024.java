@@ -36,6 +36,10 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+
 
 /*
  * This file contains an example of a Linear "OpMode".
@@ -93,6 +97,7 @@ public class Main_2024 extends LinearOpMode {
         rightBackDrive = hardwareMap.get(DcMotorEx.class, "rightBack");
         slideR = hardwareMap.get(DcMotorEx.class, "slideR");
         slideL = hardwareMap.get(DcMotorEx.class, "slideL");
+        IMU imu = hardwareMap.get(IMU.class, "imu");
         //reset encoder
         leftFrontDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         leftBackDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
@@ -112,6 +117,10 @@ public class Main_2024 extends LinearOpMode {
         slideL.setTargetPosition(0);
         slideR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         slideL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
+                RevHubOrientationOnRobot.LogoFacingDirection.UP,
+                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
+        imu.initialize(parameters);
         slideTarget = 0;
         slideMoving = false;
         slideLevel = 0;
@@ -149,11 +158,22 @@ public class Main_2024 extends LinearOpMode {
             double y = -(gamepad1.left_stick_y); // Remember, Y stick value is reversed
             double x = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
             double rx = gamepad1.right_stick_x;
-            double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
-            double rightBackPower = (y + x - rx) / denominator;
-            double leftBackPower = (y - x + rx) / denominator;
-            double leftFrontPower = (y + x + rx) / denominator;
-            double rightFrontPower = (y - x - rx) / denominator;
+
+            if(gamepad1.options){
+                imu.resetYaw();
+            }
+            double botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+
+            double rotX = x*Math.cos(-botHeading) - y*Math.sin(-botHeading);
+            double rotY = x*Math.sin(-botHeading) + y* Math.cos(-botHeading);
+
+            rotX = rotX*1.1;
+
+            double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
+            double rightBackPower = (rotY + rotX - rx) / denominator;
+            double leftBackPower = (rotY - rotX + rx) / denominator;
+            double leftFrontPower = (rotY + rotX + rx) / denominator;
+            double rightFrontPower = (rotY - rotX - rx) / denominator;
 
             //Drivetrain (Gamepad1 left + right joystick)
             leftFrontDrive.setPower(-leftFrontPower*200);
@@ -164,6 +184,7 @@ public class Main_2024 extends LinearOpMode {
             // Show the elapsed game time and wheel power.
 
             telemetry.addData("Status", "Run Time: " + runtime.toString());
+            telemetry.addData("Angle", imu.getRobotYawPitchRollAngles());
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontPower, rightFrontPower);
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
             telemetry.update();
