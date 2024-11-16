@@ -4,11 +4,10 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 
 public class ArmControl extends LinearOpMode {
-    private Servo armServo;
 
     @Override
     public void runOpMode() {
-        armServo = hardwareMap.get(Servo.class, "armServo");
+        Servo armServo = hardwareMap.get(Servo.class, "armServo");
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
