@@ -7,13 +7,11 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp
 public class ClawControl extends LinearOpMode {
-    private DcMotor clawMotor;
-    private Servo clawServo;
-
     @Override
     public void runOpMode() {
-        clawMotor = hardwareMap.get(DcMotor.class, "motorTest");
-        clawServo = hardwareMap.get(Servo.class, "servoTest");
+        // Local variables for hardware
+        DcMotor motorTest = hardwareMap.get(DcMotor.class, "motorTest");
+        Servo servoTest = hardwareMap.get(Servo.class, "servoTest");
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
@@ -21,25 +19,23 @@ public class ClawControl extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-            // Motor control with deadzone
             double tgtPower = -this.gamepad1.left_stick_y;
-            if (Math.abs(tgtPower) < 0.05) {
-                tgtPower = 0;
-            }
-            clawMotor.setPower(tgtPower);
+
+            // Motor control
+            motorTest.setPower(tgtPower);
 
             // Servo control
             if (gamepad1.y) {
-                clawServo.setPosition(0.4);
+                servoTest.setPosition(0.4);
             } else if (gamepad1.x) {
-                clawServo.setPosition(0.65);
+                servoTest.setPosition(0.65);
             }
 
             // Telemetry updates
             telemetry.addData("Status", "Running");
             telemetry.addData("Target Power", tgtPower);
-            telemetry.addData("Motor Power", clawMotor.getPower());
-            telemetry.addData("Servo Position", clawServo.getPosition());
+            telemetry.addData("Motor Power", motorTest.getPower());
+            telemetry.addData("Servo Position", servoTest.getPosition());
             telemetry.update();
         }
     }
