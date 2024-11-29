@@ -85,6 +85,9 @@ public class Main_2024 extends LinearOpMode {
     private DcMotorEx slideL = null;
     private DcMotorEx armHinge = null;
     private CRServo tongue;
+    private Servo claw;
+    private Servo wrist;
+    private Servo bucket;
     int slideTarget;
     boolean slideMoving;
     int slideLevel;
@@ -105,6 +108,9 @@ public class Main_2024 extends LinearOpMode {
         slideL = hardwareMap.get(DcMotorEx.class, "slideL");
         armHinge = hardwareMap.get(DcMotorEx.class, "armHinge");
         tongue = hardwareMap.get(CRServo.class, "tongue");
+        claw = hardwareMap.get(Servo.class,"claw");
+        wrist = hardwareMap.get(Servo.class,"wrist");
+        bucket = hardwareMap.get(Servo.class,"bucket");
         IMU imu = hardwareMap.get(IMU.class, "imu");
         //reset encoder
         leftFrontDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
@@ -156,7 +162,11 @@ public class Main_2024 extends LinearOpMode {
         rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
         slideL.setDirection(DcMotorSimple.Direction.REVERSE);
         armHinge.setDirection(DcMotorSimple.Direction.REVERSE);
-
+        wrist.setDirection(Servo.Direction.REVERSE);
+        bucket.setPosition(0);
+        wrist.setPosition(0);
+        claw.setPosition(0.2);
+        wrist.setDirection((Servo.Direction.REVERSE));
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
         telemetry.update();
@@ -207,6 +217,8 @@ public class Main_2024 extends LinearOpMode {
             slide();
             arm();
             tongue();
+            grab();
+            claw();
         }
     }
 
@@ -308,54 +320,6 @@ public class Main_2024 extends LinearOpMode {
 
     }
 
-
-    /*public void arm(){
-        armHinge.setVelocity(800);
-        if (gamepad2.left_stick_y < 0 && armHinge.getTargetPosition()<=0){
-            // Go UP
-            armTarget += (int)(gamepad2.left_stick_y);
-            armHinge.setTargetPosition(armTarget);
-            if (armTarget<0){
-                armTarget = 0;
-                armHinge.setTargetPosition(armTarget);
-            }
-            telemetry.addData("arm:", armHinge.getCurrentPosition());
-            telemetry.addData("tgt pos:", armHinge.getTargetPosition());
-            telemetry.addData("gp:", gamepad2.left_stick_y);
-            telemetry.update();
-            armMoving = true;
-            //upDown.setVelocity(500*upness);
-        }
-        else if (gamepad2.left_stick_y > 0 && armHinge.getTargetPosition()>-1000){
-            // Go DOWN
-            armTarget -= (int)(gamepad2.left_stick_y);
-            armHinge.setTargetPosition(armTarget);
-            if (armTarget<-1000){
-                armTarget = -1000;
-                armHinge.setTargetPosition(armTarget);
-            }
-            telemetry.addData("arm:", armHinge.getCurrentPosition());
-            telemetry.addData("tgt pos:", armHinge.getTargetPosition());
-            telemetry.addData("gp:", gamepad2.left_stick_y);
-            telemetry.update();
-            armMoving = true;
-            //upDown.setVelocity(500*upness);
-        }
-        else {
-            if (armMoving) {
-                armTarget = armHinge.getCurrentPosition();
-                armMoving = false;
-                // STOP
-                //upDown.setVelocity(0);
-                //Do nothing for now - holding position
-            }
-            telemetry.addData("arm:", armHinge.getCurrentPosition());
-            telemetry.addData("tgt pos:", armHinge.getTargetPosition());
-            telemetry.addData("gp:", gamepad2.left_stick_y);
-            telemetry.update();
-        }
-    }*/
-
     public void tongue(){
         if (gamepad2.left_bumper) {
             tongue.setPower(1);
@@ -363,6 +327,28 @@ public class Main_2024 extends LinearOpMode {
             tongue.setPower(-1);
         } else {
             tongue.setPower(0);
+        }
+    }
+
+    public void grab(){ //use target position for motor & add to if else
+        if(gamepad2.a){ //grab specimen forward position
+            //motor first
+            bucket.setPosition(0.2);
+            wrist.setPosition(0.5);
+            //claw.setPosition(0.55);
+        }else if(gamepad2.b){ //dump in bucket up position
+            //motor first
+            wrist.setPosition(0);
+            //claw.setPosition(0.55);
+            bucket.setPosition(1);
+        }
+    }
+
+    public void claw(){//open-close
+        if(gamepad2.x && claw.getPosition()==0.55){
+            claw.setPosition(0.2);
+        }else if(gamepad2.x){
+            claw.setPosition(0.55);
         }
     }
 }
