@@ -269,13 +269,54 @@ public class Main_2024 extends LinearOpMode {
     }
 
     public void arm(){
-        armHinge.setVelocity(1000);
-        if (gamepad2.left_stick_y < 0 && armHinge.getTargetPosition()>=-1000){
+        armHinge.setTargetPosition(armTarget);
+        //armHinge.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        armHinge.setVelocity(900);
+        if (armTarget>= -900 && gamepad2.left_stick_y > 0){
+            // Go down
+            armTarget -= (int)(gamepad2.left_stick_y*20);
+            if (armTarget<-900){
+                armTarget = -900;
+            }
+            armMoving = true;
+            telemetry.addData("arm pos", armHinge.getCurrentPosition());
+            telemetry.addData("tgt pos", armHinge.getTargetPosition());
+            telemetry.update();
+            //upDown.setVelocity(500*upness);
+        }
+        else if (gamepad2.left_stick_y < 0 && armTarget <=0){
+            // Go up
+            armTarget -= (int)(gamepad2.left_stick_y*20);
+            if (armTarget>0){
+                armTarget = 0;
+            }
+            armMoving = true;
+            telemetry.addData("arm pos", armHinge.getCurrentPosition());
+            telemetry.addData("tgt pos", armHinge.getTargetPosition());
+            telemetry.update();
+            //upDown.setVelocity(500*upness);
+        }
+        else {
+            if (armMoving){
+                armTarget = armHinge.getCurrentPosition();
+                armMoving = false;
+                // STOP
+                //upDown.setVelocity(0);
+                //Do nothing for now - holding position
+            }
+        }
+
+    }
+
+
+    /*public void arm(){
+        armHinge.setVelocity(800);
+        if (gamepad2.left_stick_y < 0 && armHinge.getTargetPosition()<=0){
             // Go UP
             armTarget += (int)(gamepad2.left_stick_y);
             armHinge.setTargetPosition(armTarget);
-            if (armTarget<-1000){
-                armTarget = -1000;
+            if (armTarget<0){
+                armTarget = 0;
                 armHinge.setTargetPosition(armTarget);
             }
             telemetry.addData("arm:", armHinge.getCurrentPosition());
@@ -285,12 +326,12 @@ public class Main_2024 extends LinearOpMode {
             armMoving = true;
             //upDown.setVelocity(500*upness);
         }
-        else if (gamepad2.left_stick_y > 0 && armHinge.getTargetPosition()<0){
+        else if (gamepad2.left_stick_y > 0 && armHinge.getTargetPosition()>-1000){
             // Go DOWN
-            armTarget += (int)(gamepad2.left_stick_y);
+            armTarget -= (int)(gamepad2.left_stick_y);
             armHinge.setTargetPosition(armTarget);
-            if (armTarget>0){
-                armTarget = 0;
+            if (armTarget<-1000){
+                armTarget = -1000;
                 armHinge.setTargetPosition(armTarget);
             }
             telemetry.addData("arm:", armHinge.getCurrentPosition());
@@ -313,7 +354,7 @@ public class Main_2024 extends LinearOpMode {
             telemetry.addData("gp:", gamepad2.left_stick_y);
             telemetry.update();
         }
-    }
+    }*/
 
     public void tongue(){
         if (gamepad2.left_bumper) {
