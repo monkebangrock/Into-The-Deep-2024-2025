@@ -35,6 +35,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -81,10 +83,14 @@ public class Main_2024 extends LinearOpMode {
     private DcMotorEx rightBackDrive = null;
     private DcMotorEx slideR = null;
     private DcMotorEx slideL = null;
+    private DcMotorEx armHinge = null;
+    private CRServo tongue;
     int slideTarget;
     boolean slideMoving;
     int slideLevel;
     boolean slideInput;
+    int armTarget;
+    boolean armMoving;
 
     @Override
     public void runOpMode() {
@@ -97,6 +103,8 @@ public class Main_2024 extends LinearOpMode {
         rightBackDrive = hardwareMap.get(DcMotorEx.class, "rightBack");
         slideR = hardwareMap.get(DcMotorEx.class, "slideR");
         slideL = hardwareMap.get(DcMotorEx.class, "slideL");
+        armHinge = hardwareMap.get(DcMotorEx.class, "armHinge");
+        tongue = hardwareMap.get(CRServo.class, "tongue");
         IMU imu = hardwareMap.get(IMU.class, "imu");
         //reset encoder
         leftFrontDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
@@ -105,6 +113,7 @@ public class Main_2024 extends LinearOpMode {
         rightBackDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         slideR.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         slideL.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        armHinge.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         //brake motors
         leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -112,11 +121,14 @@ public class Main_2024 extends LinearOpMode {
         rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         slideR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         slideL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        armHinge.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         //slide stuff
         slideR.setTargetPosition(0);
         slideL.setTargetPosition(0);
+        armHinge.setTargetPosition(0);
         slideR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         slideL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        armHinge.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
                 RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
@@ -125,6 +137,8 @@ public class Main_2024 extends LinearOpMode {
         slideMoving = false;
         slideLevel = 0;
         slideInput = false;
+        armTarget = 0;
+        armMoving = false;
 
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
@@ -141,6 +155,7 @@ public class Main_2024 extends LinearOpMode {
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
         slideL.setDirection(DcMotorSimple.Direction.REVERSE);
+        armHinge.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
@@ -183,13 +198,15 @@ public class Main_2024 extends LinearOpMode {
 
             // Show the elapsed game time and wheel power.
 
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
+            /*telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Angle", imu.getRobotYawPitchRollAngles());
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontPower, rightFrontPower);
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
-            telemetry.update();
+            telemetry.update();*/
 
             slide();
+            arm();
+            tongue();
         }
     }
 
@@ -243,11 +260,68 @@ public class Main_2024 extends LinearOpMode {
                     slideR.setVelocity(0);
                     slideL.setVelocity(0);
                 }
-                telemetry.addData("Right position:", slideR.getCurrentPosition());
+                /*telemetry.addData("Right position:", slideR.getCurrentPosition());
                 telemetry.addData("Left position:", slideL.getCurrentPosition());
                 telemetry.addData("velocity", slideR.getVelocity());
-                telemetry.update();
+                telemetry.update();*/
             }
+        }
+    }
+
+    public void arm(){
+        armHinge.setVelocity(1000);
+        if (gamepad2.left_stick_y < 0 && armHinge.getTargetPosition()>=-1000){
+            // Go UP
+            armTarget += (int)(gamepad2.left_stick_y);
+            armHinge.setTargetPosition(armTarget);
+            if (armTarget<-1000){
+                armTarget = -1000;
+                armHinge.setTargetPosition(armTarget);
+            }
+            telemetry.addData("arm:", armHinge.getCurrentPosition());
+            telemetry.addData("tgt pos:", armHinge.getTargetPosition());
+            telemetry.addData("gp:", gamepad2.left_stick_y);
+            telemetry.update();
+            armMoving = true;
+            //upDown.setVelocity(500*upness);
+        }
+        else if (gamepad2.left_stick_y > 0 && armHinge.getTargetPosition()<0){
+            // Go DOWN
+            armTarget += (int)(gamepad2.left_stick_y);
+            armHinge.setTargetPosition(armTarget);
+            if (armTarget>0){
+                armTarget = 0;
+                armHinge.setTargetPosition(armTarget);
+            }
+            telemetry.addData("arm:", armHinge.getCurrentPosition());
+            telemetry.addData("tgt pos:", armHinge.getTargetPosition());
+            telemetry.addData("gp:", gamepad2.left_stick_y);
+            telemetry.update();
+            armMoving = true;
+            //upDown.setVelocity(500*upness);
+        }
+        else {
+            if (armMoving) {
+                armTarget = armHinge.getCurrentPosition();
+                armMoving = false;
+                // STOP
+                //upDown.setVelocity(0);
+                //Do nothing for now - holding position
+            }
+            telemetry.addData("arm:", armHinge.getCurrentPosition());
+            telemetry.addData("tgt pos:", armHinge.getTargetPosition());
+            telemetry.addData("gp:", gamepad2.left_stick_y);
+            telemetry.update();
+        }
+    }
+
+    public void tongue(){
+        if (gamepad2.left_bumper) {
+            tongue.setPower(1);
+        } else if (gamepad2.right_bumper) {
+            tongue.setPower(-1);
+        } else {
+            tongue.setPower(0);
         }
     }
 }
