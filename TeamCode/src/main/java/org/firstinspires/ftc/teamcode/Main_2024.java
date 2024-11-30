@@ -284,9 +284,9 @@ public class Main_2024 extends LinearOpMode {
         armHinge.setTargetPosition(armTarget);
         //armHinge.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         armHinge.setVelocity(900);
-        if (armTarget>= -900 && gamepad2.left_stick_y > 0){
+        if (armTarget>= -900 && gamepad2.right_stick_y > 0){
             // Go down
-            armTarget -= (int)(gamepad2.left_stick_y*20);
+            armTarget -= (int)(gamepad2.right_stick_y*20);
             if (armTarget<-900){
                 armTarget = -900;
             }
@@ -296,9 +296,9 @@ public class Main_2024 extends LinearOpMode {
             telemetry.update();
             //upDown.setVelocity(500*upness);
         }
-        else if (gamepad2.left_stick_y < 0 && armTarget <=0){
+        else if (gamepad2.right_stick_y < 0 && armTarget <=0){
             // Go up
-            armTarget -= (int)(gamepad2.left_stick_y*20);
+            armTarget -= (int)(gamepad2.right_stick_y*20);
             if (armTarget>0){
                 armTarget = 0;
             }
