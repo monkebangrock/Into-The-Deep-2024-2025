@@ -349,7 +349,6 @@ public class Main_2024 extends LinearOpMode {
                 //motor first
                 wrist.setPosition(0);
                 //claw.setPosition(0.55);
-                bucket.setPosition(0.5);
             }
         }else{
             if (!gamepad2.a){
