@@ -94,6 +94,8 @@ public class Main_2024 extends LinearOpMode {
     boolean slideInput;
     int armTarget;
     boolean armMoving;
+    boolean xPressed;
+    boolean aPressed;
 
     @Override
     public void runOpMode() {
@@ -145,6 +147,8 @@ public class Main_2024 extends LinearOpMode {
         slideInput = false;
         armTarget = 0;
         armMoving = false;
+        xPressed = false;
+        aPressed = false;
 
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
@@ -166,7 +170,7 @@ public class Main_2024 extends LinearOpMode {
         bucket.setPosition(0);
         wrist.setPosition(0);
         claw.setPosition(0.2);
-        wrist.setDirection((Servo.Direction.REVERSE));
+
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
         telemetry.update();
@@ -180,6 +184,8 @@ public class Main_2024 extends LinearOpMode {
         rightBackDrive.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
+            telemetry.addData("wrist position",wrist.getPosition());
+            telemetry.update();
             double y = -(gamepad1.left_stick_y); // Remember, Y stick value is reversed
             double x = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
             double rx = gamepad1.right_stick_x;
@@ -331,24 +337,40 @@ public class Main_2024 extends LinearOpMode {
     }
 
     public void grab(){ //use target position for motor & add to if else
-        if(gamepad2.a){ //grab specimen forward position
-            //motor first
-            bucket.setPosition(0.2);
-            wrist.setPosition(0.5);
-            //claw.setPosition(0.55);
-        }else if(gamepad2.b){ //dump in bucket up position
-            //motor first
-            wrist.setPosition(0);
-            //claw.setPosition(0.55);
-            bucket.setPosition(1);
+        if(!aPressed){
+            if(gamepad2.a && wrist.getPosition() == 0){ //grab specimen forward position
+                aPressed = true;
+                //motor first
+                bucket.setPosition(0);
+                wrist.setPosition(0.2);
+                //claw.setPosition(0.55);
+            }else if(gamepad2.a){ //dump in bucket up position
+                aPressed = true;
+                //motor first
+                wrist.setPosition(0);
+                //claw.setPosition(0.55);
+                bucket.setPosition(0.5);
+            }
+        }else{
+            if (!gamepad2.a){
+                aPressed = false;
+            }
         }
     }
 
     public void claw(){//open-close
-        if(gamepad2.x && claw.getPosition()==0.55){
-            claw.setPosition(0.2);
-        }else if(gamepad2.x){
-            claw.setPosition(0.55);
+        if(!xPressed){
+            if(gamepad2.x && claw.getPosition()==0.55){
+                xPressed = true;
+                claw.setPosition(0.2);
+            }else if(gamepad2.x){
+                xPressed = true;
+                claw.setPosition(0.55);
+            }
+        }else{
+            if (!gamepad2.x){
+                xPressed = false;
+            }
         }
     }
 }
