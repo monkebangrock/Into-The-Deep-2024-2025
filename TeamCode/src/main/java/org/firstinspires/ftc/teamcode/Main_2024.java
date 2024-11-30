@@ -166,7 +166,7 @@ public class Main_2024 extends LinearOpMode {
         bucket.setPosition(0);
         wrist.setPosition(0);
         claw.setPosition(0.2);
-        wrist.setDirection((Servo.Direction.REVERSE));
+        wrist.setDirection((Servo.Direction.FORWARD));
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
         telemetry.update();
@@ -217,7 +217,7 @@ public class Main_2024 extends LinearOpMode {
             slide();
             arm();
             tongue();
-            grab();
+            //grab();
             claw();
         }
     }
@@ -330,7 +330,7 @@ public class Main_2024 extends LinearOpMode {
         }
     }
 
-    public void grab(){ //use target position for motor & add to if else
+    /*public void grab(){ //use target position for motor & add to if else
         if(gamepad2.a){ //grab specimen forward position
             //motor first
             bucket.setPosition(0.2);
@@ -342,7 +342,7 @@ public class Main_2024 extends LinearOpMode {
             //claw.setPosition(0.55);
             bucket.setPosition(1);
         }
-    }
+    }*/
 
     public void claw(){//open-close
         if(gamepad2.x && claw.getPosition()==0.55){
