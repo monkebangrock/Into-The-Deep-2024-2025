@@ -189,24 +189,34 @@ public class Main_2024 extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             double y = -(gamepad1.left_stick_y); // Remember, Y stick value is reversed
+            //scale the driving for more controllable driving
+                if((gamepad1.left_stick_y>-0.3 && gamepad1.left_stick_y<0) || (gamepad1.left_stick_y<0.3 && gamepad1.left_stick_y>0)){
+                    y=-gamepad1.left_stick_y*(0.4);
+                }
+                else if((gamepad1.left_stick_y>-0.6 && gamepad1.left_stick_y<-0.3) || (gamepad1.left_stick_y<0.6 && gamepad1.left_stick_y>0.3)){
+                    y=-gamepad1.left_stick_y*(0.6);
+                }
             double x = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
+            //scale the driving for more controllable driving
+                if((gamepad1.left_stick_x<0.3 && gamepad1.left_stick_y>0) || (gamepad1.left_stick_x>-0.3 && gamepad1.left_stick_y<0)){
+                    x=gamepad1.left_stick_x*(0.4)*(1.1);
+                }
+                else if((gamepad1.left_stick_x<0.6 && gamepad1.left_stick_x>0.3)||(gamepad1.left_stick_x>-0.6 && gamepad1.left_stick_x<-0.3)){
+                    x=gamepad1.left_stick_x*(0.6)*(1.1);
+                }
             double rx = gamepad1.right_stick_x;
-
-            if(gamepad1.options){
-                imu.resetYaw();
-            }
-            double botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
-
-            double rotX = x*Math.cos(-botHeading) - y*Math.sin(-botHeading);
-            double rotY = x*Math.sin(-botHeading) + y* Math.cos(-botHeading);
-
-            rotX = rotX*1.1;
-
-            double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
-            double rightBackPower = (rotY + rotX - rx) / denominator;
-            double leftBackPower = (rotY - rotX + rx) / denominator;
-            double leftFrontPower = (rotY + rotX + rx) / denominator;
-            double rightFrontPower = (rotY - rotX - rx) / denominator;
+            //scale the driving for more controllable driving
+                if((gamepad1.left_stick_x<0.3 && gamepad1.left_stick_y>0) || (gamepad1.left_stick_x>-0.3 && gamepad1.left_stick_y<0)){
+                    rx=gamepad1.left_stick_x*(0.4);
+                }
+                else if((gamepad1.left_stick_x<0.6 && gamepad1.left_stick_x>0.3)||(gamepad1.left_stick_x>-0.6 && gamepad1.left_stick_x<-0.3)){
+                    rx=gamepad1.left_stick_x*(0.6);
+                }
+            double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
+            double rightBackPower = (y + x - rx) / denominator;
+            double leftBackPower = (y - x + rx) / denominator;
+            double leftFrontPower = (y + x + rx) / denominator;
+            double rightFrontPower = (y - x - rx) / denominator;
 
             //Drivetrain (Gamepad1 left + right joystick)
             leftFrontDrive.setPower(-leftFrontPower*200);
@@ -329,7 +339,6 @@ public class Main_2024 extends LinearOpMode {
                 //Do nothing for now - holding position
             }
         }
-
     }
 
     public void tongue(){
@@ -351,10 +360,12 @@ public class Main_2024 extends LinearOpMode {
                     slideR.setTargetPosition(0);
                     slideL.setTargetPosition(0);
                 }
-                while (armHinge.getCurrentPosition() < 0) {
-                    armHinge.setTargetPosition(0);
+                while (armHinge.getCurrentPosition() < -30) {
+                    armHinge.setTargetPosition(-30);
+                    tongue.setPower(1);
                     armMoving = true;
                 }
+                tongue.setPower(0);
                 bucket.setPosition(0);
                 wrist.setPosition(0);
                 claw.setPosition(0.2);
@@ -367,7 +378,7 @@ public class Main_2024 extends LinearOpMode {
     }
 
     public void claw(){//open-close
-        if(armHinge.getCurrentPosition()<-500){
+        if(armHinge.getCurrentPosition()<-300){
             wrist.setPosition(0.15);
         }
         if(!xPressed){
