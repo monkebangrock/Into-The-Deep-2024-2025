@@ -96,6 +96,8 @@ public class Main_2024 extends LinearOpMode {
     boolean armMoving;
     boolean xPressed;
     boolean aPressed;
+    boolean yPressed;
+    boolean doorPressed;
 
     @Override
     public void runOpMode() {
@@ -149,6 +151,8 @@ public class Main_2024 extends LinearOpMode {
         armMoving = false;
         xPressed = false;
         aPressed = false;
+        yPressed = false;
+        doorPressed = false;
 
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
@@ -184,8 +188,6 @@ public class Main_2024 extends LinearOpMode {
         rightBackDrive.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-            telemetry.addData("wrist position",wrist.getPosition());
-            telemetry.update();
             double y = -(gamepad1.left_stick_y); // Remember, Y stick value is reversed
             double x = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
             double rx = gamepad1.right_stick_x;
@@ -223,8 +225,12 @@ public class Main_2024 extends LinearOpMode {
             slide();
             arm();
             tongue();
-            grab();
+            deposit();
             claw();
+            door();
+            telemetry.addData("arm pos", armHinge.getCurrentPosition());
+            telemetry.addData("tgt pos", armHinge.getTargetPosition());
+            telemetry.update();
         }
     }
 
@@ -336,39 +342,65 @@ public class Main_2024 extends LinearOpMode {
         }
     }
 
-    public void grab(){ //use target position for motor & add to if else
-        if(!aPressed){
-            if(gamepad2.a && wrist.getPosition() == 0){ //grab specimen forward position
-                aPressed = true;
+    public void deposit(){
+        if(!yPressed) {
+            if (gamepad2.y) { //grab specimen forward position
+                yPressed = true;
                 //motor first
+                while(slideR.getCurrentPosition()>10){
+                    slideR.setTargetPosition(0);
+                    slideL.setTargetPosition(0);
+                }
+                while (armHinge.getCurrentPosition() < 0) {
+                    armHinge.setTargetPosition(0);
+                    armMoving = true;
+                }
                 bucket.setPosition(0);
-                wrist.setPosition(0.2);
-                //claw.setPosition(0.55);
-            }else if(gamepad2.a){ //dump in bucket up position
-                aPressed = true;
-                //motor first
                 wrist.setPosition(0);
-                //claw.setPosition(0.55);
+                claw.setPosition(0.2);
             }
-        }else{
-            if (!gamepad2.a){
-                aPressed = false;
-            }
+        }
+        else if (!gamepad2.y){
+            yPressed = false;
+            armMoving = false;
         }
     }
 
     public void claw(){//open-close
+        if(armHinge.getCurrentPosition()<-500){
+            wrist.setPosition(0.15);
+        }
         if(!xPressed){
             if(gamepad2.x && claw.getPosition()==0.55){
                 xPressed = true;
                 claw.setPosition(0.2);
-            }else if(gamepad2.x){
+            }
+            else if(gamepad2.x){
                 xPressed = true;
                 claw.setPosition(0.55);
             }
-        }else{
+        }
+        else{
             if (!gamepad2.x){
                 xPressed = false;
+            }
+        }
+    }
+
+    public void door(){//open-close
+        if(!doorPressed){
+            if(gamepad2.a && bucket.getPosition()==0.5){
+                doorPressed = true;
+                bucket.setPosition(0);
+            }
+            else if(gamepad2.a){
+                doorPressed = true;
+                bucket.setPosition(0.5);
+            }
+        }
+        else{
+            if (!gamepad2.a){
+                doorPressed = false;
             }
         }
     }
