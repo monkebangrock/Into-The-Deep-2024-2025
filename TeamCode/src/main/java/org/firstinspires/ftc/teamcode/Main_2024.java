@@ -29,6 +29,7 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -95,9 +96,11 @@ public class Main_2024 extends LinearOpMode {
     int armTarget;
     boolean armMoving;
     boolean xPressed;
-    boolean aPressed;
     boolean yPressed;
     boolean doorPressed;
+    RevBlinkinLedDriver blinkinLedDriver;
+    RevBlinkinLedDriver.BlinkinPattern pattern = RevBlinkinLedDriver.BlinkinPattern.HOT_PINK;
+
 
     @Override
     public void runOpMode() {
@@ -116,6 +119,8 @@ public class Main_2024 extends LinearOpMode {
         wrist = hardwareMap.get(Servo.class,"wrist");
         bucket = hardwareMap.get(Servo.class,"bucket");
         IMU imu = hardwareMap.get(IMU.class, "imu");
+        blinkinLedDriver = hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");
+
         //reset encoder
         leftFrontDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         leftBackDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
@@ -150,7 +155,6 @@ public class Main_2024 extends LinearOpMode {
         armTarget = 0;
         armMoving = false;
         xPressed = false;
-        aPressed = false;
         yPressed = false;
         doorPressed = false;
 
@@ -172,15 +176,18 @@ public class Main_2024 extends LinearOpMode {
         armHinge.setDirection(DcMotorSimple.Direction.REVERSE);
         wrist.setDirection(Servo.Direction.REVERSE);
         bucket.setPosition(0);
-        wrist.setPosition(0);
+        wrist.setPosition(0.15);
         claw.setPosition(0.2);
 
-        // Wait for the game to start (driver presses START)
+
+                // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
         waitForStart();
         runtime.reset();
+
+        blinkinLedDriver.setPattern(pattern);
 
         leftFrontDrive.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         leftBackDrive.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
@@ -191,26 +198,26 @@ public class Main_2024 extends LinearOpMode {
             double y = -(gamepad1.left_stick_y); // Remember, Y stick value is reversed
             //scale the driving for more controllable driving
                 if((gamepad1.left_stick_y>-0.3 && gamepad1.left_stick_y<0) || (gamepad1.left_stick_y<0.3 && gamepad1.left_stick_y>0)){
-                    y=-gamepad1.left_stick_y*(0.4);
+                    y=-gamepad1.left_stick_y*(0.2);
                 }
                 else if((gamepad1.left_stick_y>-0.6 && gamepad1.left_stick_y<-0.3) || (gamepad1.left_stick_y<0.6 && gamepad1.left_stick_y>0.3)){
-                    y=-gamepad1.left_stick_y*(0.6);
+                    y=-gamepad1.left_stick_y*(0.4);
                 }
             double x = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
             //scale the driving for more controllable driving
                 if((gamepad1.left_stick_x<0.3 && gamepad1.left_stick_y>0) || (gamepad1.left_stick_x>-0.3 && gamepad1.left_stick_y<0)){
-                    x=gamepad1.left_stick_x*(0.4)*(1.1);
+                    x=gamepad1.left_stick_x*(0.2)*(1.1);
                 }
                 else if((gamepad1.left_stick_x<0.6 && gamepad1.left_stick_x>0.3)||(gamepad1.left_stick_x>-0.6 && gamepad1.left_stick_x<-0.3)){
-                    x=gamepad1.left_stick_x*(0.6)*(1.1);
+                    x=gamepad1.left_stick_x*(0.4)*(1.1);
                 }
             double rx = gamepad1.right_stick_x;
             //scale the driving for more controllable driving
                 if((gamepad1.left_stick_x<0.3 && gamepad1.left_stick_y>0) || (gamepad1.left_stick_x>-0.3 && gamepad1.left_stick_y<0)){
-                    rx=gamepad1.left_stick_x*(0.4);
+                    rx=gamepad1.left_stick_x*(0.2);
                 }
                 else if((gamepad1.left_stick_x<0.6 && gamepad1.left_stick_x>0.3)||(gamepad1.left_stick_x>-0.6 && gamepad1.left_stick_x<-0.3)){
-                    rx=gamepad1.left_stick_x*(0.6);
+                    rx=gamepad1.left_stick_x*(0.4);
                 }
             double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
             double rightBackPower = (y + x - rx) / denominator;
@@ -238,6 +245,7 @@ public class Main_2024 extends LinearOpMode {
             deposit();
             claw();
             door();
+            lights();
             telemetry.addData("arm pos", armHinge.getCurrentPosition());
             telemetry.addData("tgt pos", armHinge.getTargetPosition());
             telemetry.update();
@@ -288,7 +296,7 @@ public class Main_2024 extends LinearOpMode {
             }
         }
         else {
-            if (!gamepad2.dpad_down && !gamepad2.dpad_up){ //when arrow button (dpad up/down) is released
+            if (!gamepad2.dpad_down && !gamepad2.dpad_up && !yPressed){ //when arrow button (dpad up/down) is released
                 slideInput = false;
                 if(slideR.getCurrentPosition() < 10 && slideTarget == 0){
                     slideR.setVelocity(0);
@@ -356,18 +364,27 @@ public class Main_2024 extends LinearOpMode {
             if (gamepad2.y) { //grab specimen forward position
                 yPressed = true;
                 //motor first
-                while(slideR.getCurrentPosition()>10){
-                    slideR.setTargetPosition(0);
-                    slideL.setTargetPosition(0);
+                telemetry.addData("Sdlie r", slideR.getCurrentPosition());
+                telemetry.addData("tgt", slideR.getTargetPosition());
+                telemetry.update();
+                while(slideR.getCurrentPosition()>210 || slideR.getCurrentPosition()<190){
+                    slideR.setVelocity(1000);
+                    slideL.setVelocity(1000);
+                    slideR.setTargetPosition(200);
+                    slideL.setTargetPosition(200);
+                    slideLevel=0;
                 }
-                while (armHinge.getCurrentPosition() < -30) {
-                    armHinge.setTargetPosition(-30);
+                while (armHinge.getCurrentPosition() < -90) {
+                    armHinge.setTargetPosition(-90);
                     tongue.setPower(1);
                     armMoving = true;
                 }
                 tongue.setPower(0);
                 bucket.setPosition(0);
-                wrist.setPosition(0);
+                while(wrist.getPosition()!= 0){
+                    wrist.setPosition(0);
+                }
+                sleep(250);
                 claw.setPosition(0.2);
             }
         }
@@ -379,7 +396,7 @@ public class Main_2024 extends LinearOpMode {
 
     public void claw(){//open-close
         if(armHinge.getCurrentPosition()<-300){
-            wrist.setPosition(0.15);
+            wrist.setPosition(0.4);
         }
         if(!xPressed){
             if(gamepad2.x && claw.getPosition()==0.55){
@@ -413,6 +430,19 @@ public class Main_2024 extends LinearOpMode {
             if (!gamepad2.a){
                 doorPressed = false;
             }
+        }
+    }
+
+    public void lights(){
+        if(bucket.getPosition()==0.5){ //door open
+            pattern = RevBlinkinLedDriver.BlinkinPattern.GREEN;
+        }
+        else{ //door closed
+            pattern = RevBlinkinLedDriver.BlinkinPattern.RED;
+        }
+        blinkinLedDriver.setPattern(pattern);
+        if(getRuntime()>=90&& getRuntime()<94){
+            pattern = RevBlinkinLedDriver.BlinkinPattern.CP1_STROBE;
         }
     }
 }
