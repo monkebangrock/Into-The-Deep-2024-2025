@@ -38,6 +38,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /*
@@ -77,6 +78,9 @@ public class Auto_bucketside extends LinearOpMode {
     private DcMotorEx slideL = null;
     private DcMotorEx armHinge = null;
     private CRServo tongue;
+    private Servo claw;
+    private Servo wrist;
+    private Servo bucket;
     int velocity;
     int slideTarget;
     boolean slideMoving;
@@ -97,6 +101,9 @@ public class Auto_bucketside extends LinearOpMode {
         slideL = hardwareMap.get(DcMotorEx.class, "slideL");
         armHinge = hardwareMap.get(DcMotorEx.class, "armHinge");
         tongue = hardwareMap.get(CRServo.class, "tongue");
+        claw = hardwareMap.get(Servo.class,"claw");
+        wrist = hardwareMap.get(Servo.class,"wrist");
+        bucket = hardwareMap.get(Servo.class,"bucket");
         IMU imu = hardwareMap.get(IMU.class, "imu");
         //reset encoder
         leftFrontDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
@@ -133,8 +140,8 @@ public class Auto_bucketside extends LinearOpMode {
         armMoving = false;
 
         leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
-        leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
+        leftBackDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
         slideL.setDirection(DcMotorSimple.Direction.REVERSE);
         armHinge.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -395,7 +402,20 @@ public class Auto_bucketside extends LinearOpMode {
         telemetry.update();
     }
 
-    public void tongue(int pwr){
+    public void tongue(int pwr){ //-1 is out, 1 is in
         tongue.setPower(pwr);
     }
+
+    public void claw(double pos){ //0.2 is open, 0.55 is closed
+        claw.setPosition(pos);
+    }
+
+    public void wrist(double pos){ //0 is back, 0.15 is in line w/ arm
+        wrist.setPosition(pos);
+    }
+
+    public void bucket(double pos){
+        bucket.setPosition(pos);
+    }
 }
+
