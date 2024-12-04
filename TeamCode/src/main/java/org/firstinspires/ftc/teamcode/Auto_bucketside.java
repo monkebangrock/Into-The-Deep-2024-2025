@@ -147,15 +147,32 @@ public class Auto_bucketside extends LinearOpMode {
         armHinge.setDirection(DcMotorSimple.Direction.REVERSE);
         // Wait for the game to start (driver presses START)
         waitForStart();
-        velocity = 1600;
+        velocity = 2000;
+        bucket(0);
+        autoleft(5);
+        autoback(7);
+        autoccwspin(20);
         slide(1);
+        velocity = 800;
+        autoback(3);
+        bucket(0.5);
+        velocity = 2000;
+        autoccwspin(80);
+        bucket(0);
+        slide(0);
+        autoforward(16);
+        grab();
+        deposit();
+        autoback(13);
+        slide(1);
+        autoback(3);
+        bucket(0);
         autoforward(24);
         slide(0);
+        autocwspin(90);
+        autoforward(24);
         arm(-100);
-        autoback(24);
-        slide(-1);
-        arm(-400);
-        autoright(74);
+
         telemetry.addData("Path", "Complete");
         telemetry.update();
         sleep(1000);  // pause to display final telemetry message.
@@ -327,79 +344,80 @@ public class Auto_bucketside extends LinearOpMode {
         rightBackDrive.setPower(0);
     }
 
-    public void slide(){
-        if (!slideInput){ //slide input true is dpad clicked
-            if (gamepad2.dpad_up) { //when up on dpad is pressed
-                slideInput = true;
-                if(slideLevel == 0){ //low basket
-                    slideR.setVelocity(5000);
-                    slideL.setVelocity(5000);
-                    slideTarget = 1360;
-                    slideR.setTargetPosition(slideTarget);
-                    slideL.setTargetPosition(slideTarget);
-                    slideLevel = 1;
-                    telemetry.addData("level","1");
-                    telemetry.update();
-                }
-                else if(slideLevel == 1){ //high basket
-                    slideTarget = 2750;
-                    slideR.setTargetPosition(slideTarget);
-                    slideL.setTargetPosition(slideTarget);
-                    slideLevel = 2;
-                    telemetry.addData("level","2");
-                    telemetry.update();
-                }
-            }
-            else if(gamepad2.dpad_down){
-                slideInput = true;
-                if(slideLevel == 2){ //low basket
-                    slideTarget = 1360;
-                    slideR.setTargetPosition(slideTarget);
-                    slideL.setTargetPosition(slideTarget);
-                    slideLevel = 1;
-                    telemetry.addData("level","1");
-                    telemetry.update();
-                }
-                else if(slideLevel == 1){ //down
-                    slideTarget = 0;
-                    slideR.setTargetPosition(slideTarget);
-                    slideL.setTargetPosition(slideTarget);
-                    slideLevel = 0;
-                    telemetry.addData("level","0");
-                    telemetry.update();
-                }
+    public void slide(int lvl){
+        if(lvl == 1){
+            while(slideR.getCurrentPosition()<2750){
+                slideR.setVelocity(3000);
+                slideL.setVelocity(3000);
+                slideR.setTargetPosition(2750);
+                slideL.setTargetPosition(2750);
             }
         }
-        else {
-            if (!gamepad2.dpad_down && !gamepad2.dpad_up){ //when arrow button (dpad up/down) is released
-                slideInput = false;
-                if(slideR.getCurrentPosition() < 10 && slideTarget == 0){
-                    slideR.setVelocity(0);
-                    slideL.setVelocity(0);
-                }
-                /*telemetry.addData("Right position:", slideR.getCurrentPosition());
-                telemetry.addData("Left position:", slideL.getCurrentPosition());
-                telemetry.addData("velocity", slideR.getVelocity());
-                telemetry.update();*/
+        else{
+            while(slideR.getCurrentPosition()>0){
+                slideR.setVelocity(3000);
+                slideL.setVelocity(3000);
+                slideR.setTargetPosition(0);
+                slideL.setTargetPosition(0);
             }
         }
-    }
-
-    public void slide(int ticks){
-        slideR.setVelocity(5000);
-        slideL.setVelocity(5000);
-        slideR.setTargetPosition(ticks);
-        slideL.setTargetPosition(ticks);
     }
 
     public void arm(int ticks){
         armHinge.setVelocity(1000);
         armHinge.setTargetPosition(ticks);
+        if(ticks>armHinge.getCurrentPosition()){
+            while(armHinge.getCurrentPosition()<ticks){
+                armHinge.setVelocity(1000);
+                armHinge.setTargetPosition(ticks);
+            }
+        }
+        else{
+            while(armHinge.getCurrentPosition()>ticks){
+                armHinge.setVelocity(1000);
+                armHinge.setTargetPosition(ticks);
+            }
+        }
         armMoving = true;
         telemetry.addData("arm:", armHinge.getCurrentPosition());
         telemetry.addData("tgt pos:", armHinge.getTargetPosition());
         telemetry.addData("gp:", gamepad2.left_stick_y);
         telemetry.update();
+    }
+
+    public void deposit(){
+        //motor first
+        telemetry.addData("Sdlie r", slideR.getCurrentPosition());
+        telemetry.addData("tgt", slideR.getTargetPosition());
+        telemetry.update();
+        while(slideR.getCurrentPosition()>210 || slideR.getCurrentPosition()<190){
+            slideR.setVelocity(1000);
+            slideL.setVelocity(1000);
+            slideR.setTargetPosition(200);
+            slideL.setTargetPosition(200);
+            slideLevel=0;
+        }
+        while (armHinge.getCurrentPosition() < -90) {
+            armHinge.setTargetPosition(-90);
+            armMoving = true;
+        }
+        bucket.setPosition(0);
+        while(wrist.getPosition()!= 0){
+            wrist.setPosition(0);
+        }
+        sleep(250);
+        claw.setPosition(0.2);
+    }
+
+    public void grab(){
+        armHinge.setVelocity(1000);
+        claw.setPosition(0.2);
+        while(armHinge.getCurrentPosition()>-800) {
+            armHinge.setTargetPosition(-800);
+        }
+        armMoving = true;
+        wrist.setPosition(0.4);
+        claw.setPosition(0.55);
     }
 
     public void tongue(int pwr){ //-1 is out, 1 is in
@@ -418,4 +436,3 @@ public class Auto_bucketside extends LinearOpMode {
         bucket.setPosition(pos);
     }
 }
-
