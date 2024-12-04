@@ -148,16 +148,21 @@ public class Auto_observationzone extends LinearOpMode {
         // Wait for the game to start (driver presses START)
         waitForStart();
         velocity = 500;
-        autoforward(16);
-        claw(0.55);
-        wrist(0.15);
-        tongue(-1);
-        arm(-300);
-        tongue(0);
-        claw(0.2);
-        autoback(12);
-        arm(0);
-        autoright(50);
+        autoforward(5);
+        autocwspin(80);
+        autoback(50);
+        autoccwspin(10);
+        slide(2750);
+        bucket(0.5);
+        slide(0);
+        autoforward(100);
+        grab();
+        deposit();
+        autoback(100);
+        slide(2750);
+        bucket(0.5);
+        autocwspin(20);
+        autoforward(130);
         telemetry.addData("Path", "Complete");
         telemetry.update();
         sleep(1000);  // pause to display final telemetry message.
@@ -330,20 +335,79 @@ public class Auto_observationzone extends LinearOpMode {
     }
 
     public void slide(int ticks){
-        slideR.setVelocity(5000);
-        slideL.setVelocity(5000);
-        slideR.setTargetPosition(ticks);
-        slideL.setTargetPosition(ticks);
+        if(ticks>slideR.getCurrentPosition()){
+            while(slideR.getCurrentPosition()<ticks){
+                slideR.setVelocity(1000);
+                slideL.setVelocity(1000);
+                slideR.setTargetPosition(ticks);
+                slideL.setTargetPosition(ticks);
+            }
+        }
+        else{
+            while(slideR.getCurrentPosition()>ticks){
+                slideR.setVelocity(1000);
+                slideL.setVelocity(1000);
+                slideR.setTargetPosition(ticks);
+                slideL.setTargetPosition(ticks);
+            }
+        }
     }
 
     public void arm(int ticks){
         armHinge.setVelocity(1000);
         armHinge.setTargetPosition(ticks);
+        if(ticks>armHinge.getCurrentPosition()){
+            while(armHinge.getCurrentPosition()<ticks){
+                armHinge.setVelocity(1000);
+                armHinge.setTargetPosition(ticks);
+            }
+        }
+        else{
+            while(armHinge.getCurrentPosition()>ticks){
+                armHinge.setVelocity(1000);
+                armHinge.setTargetPosition(ticks);
+            }
+        }
         armMoving = true;
         telemetry.addData("arm:", armHinge.getCurrentPosition());
         telemetry.addData("tgt pos:", armHinge.getTargetPosition());
         telemetry.addData("gp:", gamepad2.left_stick_y);
         telemetry.update();
+    }
+
+    public void deposit(){
+        //motor first
+        telemetry.addData("Sdlie r", slideR.getCurrentPosition());
+        telemetry.addData("tgt", slideR.getTargetPosition());
+        telemetry.update();
+        while(slideR.getCurrentPosition()>210 || slideR.getCurrentPosition()<190){
+            slideR.setVelocity(1000);
+            slideL.setVelocity(1000);
+            slideR.setTargetPosition(200);
+            slideL.setTargetPosition(200);
+            slideLevel=0;
+        }
+        while (armHinge.getCurrentPosition() < -90) {
+            armHinge.setTargetPosition(-90);
+            armMoving = true;
+        }
+        bucket.setPosition(0);
+        while(wrist.getPosition()!= 0){
+            wrist.setPosition(0);
+        }
+        sleep(250);
+        claw.setPosition(0.2);
+    }
+
+    public void grab(){
+        armHinge.setVelocity(1000);
+        claw.setPosition(0.2);
+        while(armHinge.getCurrentPosition()>-800) {
+            armHinge.setTargetPosition(-800);
+        }
+        armMoving = true;
+        wrist.setPosition(0.4);
+        claw.setPosition(0.55);
     }
 
     public void tongue(int pwr){ //-1 is out, 1 is in
