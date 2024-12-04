@@ -195,41 +195,31 @@ public class Main_2024 extends LinearOpMode {
         rightBackDrive.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
+            /*scaling equation:
+             * P = sign(x) * k * |x|^n
+             * P: scaled value
+             * x: gamepad input
+             * sign(x): pos/neg of x
+             * k: max power constant
+             * n: reduces sensitivity for smaller values of x - greater value of n makes smaller values less powerful
+             * */
             double y = -(gamepad1.left_stick_y); // Remember, Y stick value is reversed
-            //scale the driving for more controllable driving
-                if((gamepad1.left_stick_y>-0.3 && gamepad1.left_stick_y<0) || (gamepad1.left_stick_y<0.3 && gamepad1.left_stick_y>0)){
-                    y=-gamepad1.left_stick_y*(0.2);
-                }
-                else if((gamepad1.left_stick_y>-0.6 && gamepad1.left_stick_y<-0.3) || (gamepad1.left_stick_y<0.6 && gamepad1.left_stick_y>0.3)){
-                    y=-gamepad1.left_stick_y*(0.4);
-                }
+            double yscaled = y != 0 ? Math.signum(y) * Math.pow(Math.abs(y), 2) : 0;
             double x = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
-            //scale the driving for more controllable driving
-                if((gamepad1.left_stick_x<0.3 && gamepad1.left_stick_y>0) || (gamepad1.left_stick_x>-0.3 && gamepad1.left_stick_y<0)){
-                    x=gamepad1.left_stick_x*(0.2)*(1.1);
-                }
-                else if((gamepad1.left_stick_x<0.6 && gamepad1.left_stick_x>0.3)||(gamepad1.left_stick_x>-0.6 && gamepad1.left_stick_x<-0.3)){
-                    x=gamepad1.left_stick_x*(0.4)*(1.1);
-                }
+            double xscaled = x != 0 ? Math.signum(x) * Math.pow(Math.abs(x), 2) : 0;
             double rx = gamepad1.right_stick_x;
-            //scale the driving for more controllable driving
-                if((gamepad1.left_stick_x<0.3 && gamepad1.left_stick_y>0) || (gamepad1.left_stick_x>-0.3 && gamepad1.left_stick_y<0)){
-                    rx=gamepad1.left_stick_x*(0.2);
-                }
-                else if((gamepad1.left_stick_x<0.6 && gamepad1.left_stick_x>0.3)||(gamepad1.left_stick_x>-0.6 && gamepad1.left_stick_x<-0.3)){
-                    rx=gamepad1.left_stick_x*(0.4);
-                }
+            double rxscaled = rx != 0 ? Math.signum(rx) * Math.pow(Math.abs(rx), 2) : 0;
             double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
-            double rightBackPower = (y + x - rx) / denominator;
-            double leftBackPower = (y - x + rx) / denominator;
-            double leftFrontPower = (y + x + rx) / denominator;
-            double rightFrontPower = (y - x - rx) / denominator;
+            double rightBackPower = (yscaled + xscaled - rxscaled) / denominator;
+            double leftBackPower = (yscaled - xscaled + rxscaled) / denominator;
+            double leftFrontPower = (yscaled + xscaled + rxscaled) / denominator;
+            double rightFrontPower = (yscaled - xscaled - rxscaled) / denominator;
 
             //Drivetrain (Gamepad1 left + right joystick)
-            leftFrontDrive.setPower(-leftFrontPower*200);
-            leftBackDrive.setPower(leftBackPower*200);
-            rightFrontDrive.setPower(-rightFrontPower*200);
-            rightBackDrive.setPower(rightBackPower*200);
+            leftFrontDrive.setPower(-leftFrontPower);
+            leftBackDrive.setPower(leftBackPower);
+            rightFrontDrive.setPower(-rightFrontPower);
+            rightBackDrive.setPower(rightBackPower);
 
             // Show the elapsed game time and wheel power.
 
