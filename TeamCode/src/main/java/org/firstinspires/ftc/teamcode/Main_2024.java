@@ -284,11 +284,11 @@ public class Main_2024 extends LinearOpMode {
         armHinge.setTargetPosition(armTarget);
         //armHinge.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         armHinge.setVelocity(900);
-        if (armTarget>= -800 && gamepad2.right_stick_y > 0){
+        if (armTarget>= -850 && gamepad2.right_stick_y > 0){
             // Go down
             armTarget -= (int)(gamepad2.right_stick_y*20);
-            if (armTarget<-800){
-                armTarget = -800;
+            if (armTarget<-850){
+                armTarget = -850;
             }
             armMoving = true;
             telemetry.addData("arm pos", armHinge.getCurrentPosition());
