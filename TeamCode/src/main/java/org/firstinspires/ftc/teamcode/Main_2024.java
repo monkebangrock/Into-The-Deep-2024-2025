@@ -457,11 +457,11 @@ public class Main_2024 extends LinearOpMode {
     }
 
     public void lights(){
-        if(getRuntime()<=60 && getRuntime()>=59){
+        if(runtime.seconds()<=60 && runtime.seconds()>=59){
             pattern = RevBlinkinLedDriver.BlinkinPattern.CP1_STROBE;
             blinkinLedDriver.setPattern(pattern);
         }
-        if(getRuntime()<=105 && getRuntime()>=104){
+        if(runtime.seconds()<=105 && runtime.seconds()>=104){
             pattern = RevBlinkinLedDriver.BlinkinPattern.SHOT_WHITE;
             blinkinLedDriver.setPattern(pattern);
         }
