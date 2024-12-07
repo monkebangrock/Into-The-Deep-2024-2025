@@ -113,6 +113,14 @@ public class Auto_observationzone extends LinearOpMode {
         slideR.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         slideL.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         armHinge.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        leftFrontDrive.setTargetPosition(0);
+        leftBackDrive.setTargetPosition(0);
+        rightFrontDrive.setTargetPosition(0);
+        rightBackDrive.setTargetPosition(0);
+        leftFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        leftBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         //brake motors
         leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -145,24 +153,25 @@ public class Auto_observationzone extends LinearOpMode {
         rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
         slideL.setDirection(DcMotorSimple.Direction.REVERSE);
         armHinge.setDirection(DcMotorSimple.Direction.REVERSE);
+        wrist.setDirection(Servo.Direction.REVERSE);
         // Wait for the game to start (driver presses START)
         waitForStart();
-        velocity = 500;
-        autoforward(5);
-        autocwspin(80);
-        autoback(50);
-        autoccwspin(10);
-        slide(2750);
-        bucket(0.5);
-        slide(0);
-        autoforward(100);
-        grab();
-        deposit();
-        autoback(100);
-        slide(2750);
-        bucket(0.5);
-        autocwspin(20);
-        autoforward(130);
+        velocity = 1100;
+        bucket(0);
+        //park
+        autoright(24);
+
+        //hang test?
+        /*velocity = 1100;
+        claw.setPosition(0.50);
+        sleep(500);
+        wrist(0.15);
+        autoforward(12);
+        arm(-500);
+        claw(0.2);
+        autoback(12);
+        autoright(35);*/
+
         telemetry.addData("Path", "Complete");
         telemetry.update();
         sleep(1000);  // pause to display final telemetry message.
@@ -189,18 +198,14 @@ public class Auto_observationzone extends LinearOpMode {
         leftBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        leftFrontDrive.setVelocity(velocity);
-        leftBackDrive.setVelocity(velocity);
-        rightFrontDrive.setVelocity(velocity);
-        rightBackDrive.setVelocity(velocity);
-        while(leftFrontDrive.isBusy()||leftBackDrive.isBusy()||rightFrontDrive.isBusy()||rightBackDrive.isBusy()) {
-            // Let the drive team see that we're waiting on the motor
-            telemetry.addData("Status", "Waiting for the motor to reach its target");
-            telemetry.update();
+        while(Math.abs(leftFrontDrive.getTargetPosition()-leftFrontDrive.getCurrentPosition())>15){
+            leftFrontDrive.setVelocity(velocity);
+            leftBackDrive.setVelocity(velocity);
+            rightFrontDrive.setVelocity(velocity);
+            rightBackDrive.setVelocity(velocity);
         }
-        telemetry.addData("status", "autoccwspin");
-        telemetry.update();
-
+        stopdrive();
+        sleep(100);
     }
 
     public void autocwspin (int deg){
@@ -216,16 +221,14 @@ public class Auto_observationzone extends LinearOpMode {
         leftBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        leftFrontDrive.setVelocity(velocity);
-        leftBackDrive.setVelocity(velocity);
-        rightFrontDrive.setVelocity(velocity);
-        rightBackDrive.setVelocity(velocity);
-        while(leftFrontDrive.isBusy()||leftBackDrive.isBusy()||rightFrontDrive.isBusy()||rightBackDrive.isBusy()) {
-            // Let the drive team see that we're waiting on the motor
-            telemetry.addData("Status", "Waiting for the motor to reach its target");
-            telemetry.update();
+        while(Math.abs(leftFrontDrive.getTargetPosition()-leftFrontDrive.getCurrentPosition())>15){
+            leftFrontDrive.setVelocity(velocity);
+            leftBackDrive.setVelocity(velocity);
+            rightFrontDrive.setVelocity(velocity);
+            rightBackDrive.setVelocity(velocity);
         }
         stopdrive();
+        sleep(100);
     }
 
     public void autoforward (int in){
@@ -241,16 +244,14 @@ public class Auto_observationzone extends LinearOpMode {
         leftBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        leftFrontDrive.setVelocity(velocity);
-        leftBackDrive.setVelocity(velocity);
-        rightFrontDrive.setVelocity(velocity);
-        rightBackDrive.setVelocity(velocity);
-        while(leftFrontDrive.isBusy()||leftBackDrive.isBusy()||rightFrontDrive.isBusy()||rightBackDrive.isBusy()) {
-            // Let the drive team see that we're waiting on the motor
-            telemetry.addData("Status", "Waiting for the motor to reach its target");
-            telemetry.update();
+        while(Math.abs(leftFrontDrive.getTargetPosition()-leftFrontDrive.getCurrentPosition())>15){
+            leftFrontDrive.setVelocity(velocity);
+            leftBackDrive.setVelocity(velocity);
+            rightFrontDrive.setVelocity(velocity);
+            rightBackDrive.setVelocity(velocity);
         }
         stopdrive();
+        sleep(100);
     }
 
     public void autoback (int in){
@@ -266,16 +267,14 @@ public class Auto_observationzone extends LinearOpMode {
         leftBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        leftFrontDrive.setVelocity(velocity);
-        leftBackDrive.setVelocity(velocity);
-        rightFrontDrive.setVelocity(velocity);
-        rightBackDrive.setVelocity(velocity);
-        while(leftFrontDrive.isBusy()||leftBackDrive.isBusy()||rightFrontDrive.isBusy()||rightBackDrive.isBusy()) {
-            // Let the drive team see that we're waiting on the motor
-            telemetry.addData("Status", "Waiting for the motor to reach its target");
-            telemetry.update();
+        while(Math.abs(leftFrontDrive.getTargetPosition()-leftFrontDrive.getCurrentPosition())>15){
+            leftFrontDrive.setVelocity(velocity);
+            leftBackDrive.setVelocity(velocity);
+            rightFrontDrive.setVelocity(velocity);
+            rightBackDrive.setVelocity(velocity);
         }
         stopdrive();
+        sleep(100);
     }
     public void autoright (int in){
         leftFrontDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
@@ -290,16 +289,14 @@ public class Auto_observationzone extends LinearOpMode {
         leftBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        leftFrontDrive.setVelocity(velocity);
-        leftBackDrive.setVelocity(velocity);
-        rightFrontDrive.setVelocity(velocity);
-        rightBackDrive.setVelocity(velocity);
-        while(leftFrontDrive.isBusy()||leftBackDrive.isBusy()||rightFrontDrive.isBusy()||rightBackDrive.isBusy()) {
-            // Let the drive team see that we're waiting on the motor
-            telemetry.addData("Status", "Waiting for the motor to reach its target");
-            telemetry.update();
+        while(Math.abs(leftFrontDrive.getTargetPosition()-leftFrontDrive.getCurrentPosition())>15){
+            leftFrontDrive.setVelocity(velocity);
+            leftBackDrive.setVelocity(velocity);
+            rightFrontDrive.setVelocity(velocity);
+            rightBackDrive.setVelocity(velocity);
         }
         stopdrive();
+        sleep(100);
     }
 
     public void autoleft (int in){
@@ -315,16 +312,14 @@ public class Auto_observationzone extends LinearOpMode {
         leftBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        leftFrontDrive.setVelocity(velocity);
-        leftBackDrive.setVelocity(velocity);
-        rightFrontDrive.setVelocity(velocity);
-        rightBackDrive.setVelocity(velocity);
-        while(leftFrontDrive.isBusy()||leftBackDrive.isBusy()||rightFrontDrive.isBusy()||rightBackDrive.isBusy()) {
-            // Let the drive team see that we're waiting on the motor
-            telemetry.addData("Status", "Waiting for the motor to reach its target");
-            telemetry.update();
+        while(Math.abs(leftFrontDrive.getTargetPosition()-leftFrontDrive.getCurrentPosition())>15){
+            leftFrontDrive.setVelocity(velocity);
+            leftBackDrive.setVelocity(velocity);
+            rightFrontDrive.setVelocity(velocity);
+            rightBackDrive.setVelocity(velocity);
         }
         stopdrive();
+        sleep(100);
     }
 
     public void stopdrive(){
@@ -334,21 +329,21 @@ public class Auto_observationzone extends LinearOpMode {
         rightBackDrive.setPower(0);
     }
 
-    public void slide(int ticks){
-        if(ticks>slideR.getCurrentPosition()){
-            while(slideR.getCurrentPosition()<ticks){
-                slideR.setVelocity(1000);
-                slideL.setVelocity(1000);
-                slideR.setTargetPosition(ticks);
-                slideL.setTargetPosition(ticks);
+    public void slide(int lvl){
+        if(lvl == 1){
+            while(slideR.getCurrentPosition()<2750){
+                slideR.setVelocity(3000);
+                slideL.setVelocity(3000);
+                slideR.setTargetPosition(2750);
+                slideL.setTargetPosition(2750);
             }
         }
         else{
-            while(slideR.getCurrentPosition()>ticks){
-                slideR.setVelocity(1000);
-                slideL.setVelocity(1000);
-                slideR.setTargetPosition(ticks);
-                slideL.setTargetPosition(ticks);
+            while(slideR.getCurrentPosition()>0){
+                slideR.setVelocity(3000);
+                slideL.setVelocity(3000);
+                slideR.setTargetPosition(0);
+                slideL.setTargetPosition(0);
             }
         }
     }
@@ -400,14 +395,17 @@ public class Auto_observationzone extends LinearOpMode {
     }
 
     public void grab(){
-        armHinge.setVelocity(1000);
         claw.setPosition(0.2);
-        while(armHinge.getCurrentPosition()>-800) {
-            armHinge.setTargetPosition(-800);
-        }
-        armMoving = true;
+        sleep(300);
         wrist.setPosition(0.4);
+        armHinge.setVelocity(1000);
+        armHinge.setTargetPosition(-800);
+        armHinge.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        while(armHinge.getCurrentPosition()>-790) {
+            armHinge.setVelocity(1000);
+        }
         claw.setPosition(0.55);
+        sleep(500);
     }
 
     public void tongue(int pwr){ //-1 is out, 1 is in
@@ -415,14 +413,22 @@ public class Auto_observationzone extends LinearOpMode {
     }
 
     public void claw(double pos){ //0.2 is open, 0.55 is closed
-        claw.setPosition(pos);
+
+        while(claw.getPosition() != pos){
+            claw.setPosition(pos);
+        }
     }
 
     public void wrist(double pos){ //0 is back, 0.15 is in line w/ arm
-        wrist.setPosition(pos);
+        while(wrist.getPosition() != pos){
+            wrist.setPosition(pos);
+        }
     }
 
     public void bucket(double pos){
-        bucket.setPosition(pos);
+        while(bucket.getPosition() != pos){
+            bucket.setPosition(pos);
+        }
+        sleep(300);
     }
 }
