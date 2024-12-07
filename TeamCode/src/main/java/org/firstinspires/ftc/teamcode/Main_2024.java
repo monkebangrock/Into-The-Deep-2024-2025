@@ -187,6 +187,7 @@ public class Main_2024 extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
+        pattern = RevBlinkinLedDriver.BlinkinPattern.RED;
         blinkinLedDriver.setPattern(pattern);
 
         leftFrontDrive.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
@@ -228,7 +229,6 @@ public class Main_2024 extends LinearOpMode {
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontPower, rightFrontPower);
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
             telemetry.update();*/
-
             slide();
             arm();
             tongue();
@@ -236,32 +236,57 @@ public class Main_2024 extends LinearOpMode {
             claw();
             door();
             lights();
-            telemetry.addData("arm pos", armHinge.getCurrentPosition());
-            telemetry.addData("tgt pos", armHinge.getTargetPosition());
-            telemetry.update();
+            //telemetry.addData("arm pos", armHinge.getCurrentPosition());
+            //telemetry.addData("tgt pos", armHinge.getTargetPosition());
+            //telemetry.update();
         }
     }
 
     public void slide(){
+        if(slideR.getCurrentPosition() < 20 && slideLevel == 0){
+            //turns off motors when at 0 position
+            /*slideR.setVelocity(0);
+            slideL.setVelocity(0);
+            slideR.setPower(0);
+            slideL.setPower(0);*/
+            slideR.setMotorDisable();
+            slideL.setMotorDisable();
+            if(gamepad2.dpad_down && slideLevel == 0){
+                slideInput = true;
+                slideTarget = 0;
+                slideR.setMotorEnable();
+                slideL.setMotorEnable();
+                slideR.setVelocity(5000);
+                slideL.setVelocity(5000);
+                slideR.setTargetPosition(slideTarget);
+                slideL.setTargetPosition(slideTarget);
+                slideLevel = -1;
+                telemetry.addData("level:","0");
+                telemetry.addData("power:", "OFF");
+                telemetry.update();
+            }
+        }
         if (!slideInput){ //slide input true is dpad clicked
             if (gamepad2.dpad_up) { //when up on dpad is pressed
                 slideInput = true;
-                if(slideLevel == 0){ //low basket
+                slideR.setMotorEnable();
+                slideL.setMotorEnable();
+                if(slideLevel <= 0){ //low basket
                     slideR.setVelocity(5000);
                     slideL.setVelocity(5000);
                     slideTarget = 1360;
                     slideR.setTargetPosition(slideTarget);
                     slideL.setTargetPosition(slideTarget);
                     slideLevel = 1;
-                    telemetry.addData("level","1");
+                    telemetry.addData("level:","1");
                     telemetry.update();
                 }
-                else if(slideLevel == 1){ //high basket
+                else if(slideLevel == 1 && armHinge.getCurrentPosition()> -300){ //high basket
                     slideTarget = 2750;
                     slideR.setTargetPosition(slideTarget);
                     slideL.setTargetPosition(slideTarget);
                     slideLevel = 2;
-                    telemetry.addData("level","2");
+                    telemetry.addData("level:","2");
                     telemetry.update();
                 }
             }
@@ -272,7 +297,7 @@ public class Main_2024 extends LinearOpMode {
                     slideR.setTargetPosition(slideTarget);
                     slideL.setTargetPosition(slideTarget);
                     slideLevel = 1;
-                    telemetry.addData("level","1");
+                    telemetry.addData("level:","1");
                     telemetry.update();
                 }
                 else if(slideLevel == 1){ //down
@@ -280,7 +305,15 @@ public class Main_2024 extends LinearOpMode {
                     slideR.setTargetPosition(slideTarget);
                     slideL.setTargetPosition(slideTarget);
                     slideLevel = 0;
-                    telemetry.addData("level","0");
+                    telemetry.addData("level:","0");
+                    telemetry.update();
+                }
+                else if(slideLevel <= 0){
+                    slideTarget = 0;
+                    slideR.setTargetPosition(slideTarget);
+                    slideL.setTargetPosition(slideTarget);
+                    slideLevel = -1;
+                    telemetry.addData("level:","0");
                     telemetry.update();
                 }
             }
@@ -288,10 +321,6 @@ public class Main_2024 extends LinearOpMode {
         else {
             if (!gamepad2.dpad_down && !gamepad2.dpad_up && !yPressed){ //when arrow button (dpad up/down) is released
                 slideInput = false;
-                if(slideR.getCurrentPosition() < 10 && slideTarget == 0){
-                    slideR.setVelocity(0);
-                    slideL.setVelocity(0);
-                }
                 /*telemetry.addData("Right position:", slideR.getCurrentPosition());
                 telemetry.addData("Left position:", slideL.getCurrentPosition());
                 telemetry.addData("velocity", slideR.getVelocity());
@@ -304,11 +333,11 @@ public class Main_2024 extends LinearOpMode {
         armHinge.setTargetPosition(armTarget);
         //armHinge.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         armHinge.setVelocity(900);
-        if (armTarget>= -850 && gamepad2.right_stick_y > 0){
+        if (armTarget>= -890 && gamepad2.right_stick_y > 0 && slideLevel<2){
             // Go down
             armTarget -= (int)(gamepad2.right_stick_y*20);
-            if (armTarget<-850){
-                armTarget = -850;
+            if (armTarget<-890){
+                armTarget = -890;
             }
             armMoving = true;
             telemetry.addData("arm pos", armHinge.getCurrentPosition());
@@ -316,7 +345,7 @@ public class Main_2024 extends LinearOpMode {
             telemetry.update();
             //upDown.setVelocity(500*upness);
         }
-        else if (gamepad2.right_stick_y < 0 && armTarget <=0){
+        else if (gamepad2.right_stick_y < 0 && armTarget <=0 && slideLevel<2){
             // Go up
             armTarget -= (int)(gamepad2.right_stick_y*20);
             if (armTarget>0){
@@ -410,10 +439,14 @@ public class Main_2024 extends LinearOpMode {
             if(gamepad2.a && bucket.getPosition()==0.5){
                 doorPressed = true;
                 bucket.setPosition(0);
+                pattern = RevBlinkinLedDriver.BlinkinPattern.RED;
+                blinkinLedDriver.setPattern(pattern);
             }
             else if(gamepad2.a){
                 doorPressed = true;
                 bucket.setPosition(0.5);
+                pattern = RevBlinkinLedDriver.BlinkinPattern.GREEN;
+                blinkinLedDriver.setPattern(pattern);
             }
         }
         else{
@@ -424,15 +457,14 @@ public class Main_2024 extends LinearOpMode {
     }
 
     public void lights(){
-        if(bucket.getPosition()==0.5){ //door open
-            pattern = RevBlinkinLedDriver.BlinkinPattern.GREEN;
-        }
-        else{ //door closed
-            pattern = RevBlinkinLedDriver.BlinkinPattern.RED;
-        }
-        blinkinLedDriver.setPattern(pattern);
-        if(getRuntime()>=90&& getRuntime()<94){
+        if(getRuntime()<=60 && getRuntime()>=59){
             pattern = RevBlinkinLedDriver.BlinkinPattern.CP1_STROBE;
+            blinkinLedDriver.setPattern(pattern);
         }
+        if(getRuntime()<=105 && getRuntime()>=104){
+            pattern = RevBlinkinLedDriver.BlinkinPattern.SHOT_WHITE;
+            blinkinLedDriver.setPattern(pattern);
+        }
+
     }
 }
