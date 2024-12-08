@@ -156,33 +156,50 @@ public class Auto_bucketside extends LinearOpMode {
         wrist.setDirection(Servo.Direction.REVERSE);
         // Wait for the game to start (driver presses START)
         waitForStart();
-        velocity = 1100;
+        velocity = 1300;
         bucket(0);
         //first sample deposit
-        autoforward(18);
-        autocwspin(42);
-        autoback(9);
+        autoforward(14);
+        autocwspin(47);
+        autoback(7);
         slide(1);
         velocity = 850;
         autoback(2);
         bucket(0.5);
-        autoforward(5);
-        velocity = 1350;
+        autoforward(4);
+        velocity = 1300;
         slide(0);
         //grab sample
-        autoccwspin(40);
+        autoccwspin(42);
         autoleft(3);
-        autoback(1);
+        autoforward(3);
         grab();
         deposit();
         autoback(3);
-        autocwspin(45);
-        velocity = 850;
+        autocwspin(42);
+        velocity = 950;
         slide(1);
         autoback(2);
         bucket(0.5);
         autoforward(5);
         slide(0);
+        //sample 2 bucket
+        autoccwspin(40);
+        autoleft(12);
+        grab();
+        deposit();
+        autocwspin(15);
+        autoforward(2);
+        slide(1);
+        bucket(0.5);
+        autoforward(5);
+        slide(0);
+        //set up for teleop
+        wrist(0.5);
+        arm(-350);
+        autoforward(20);
+
+        /*
         //push sample 2
         velocity = 1700;
         autoccwspin(47);
@@ -197,7 +214,7 @@ public class Auto_bucketside extends LinearOpMode {
         tongue(-1);
         autoforward(6);
         arm(-350);
-        wrist(0.7);
+        wrist(0.7);*/
 
         telemetry.addData("Path", "Complete");
         telemetry.update();
@@ -371,6 +388,10 @@ public class Auto_bucketside extends LinearOpMode {
                 slideL.setVelocity(3000);
                 slideR.setTargetPosition(0);
                 slideL.setTargetPosition(0);
+                if(slideR.getCurrentPosition()<30){
+                    slideR.setVelocity(0);
+                    slideL.setVelocity(0);
+                }
             }
         }
     }
@@ -426,9 +447,9 @@ public class Auto_bucketside extends LinearOpMode {
         sleep(300);
         wrist.setPosition(0.4);
         armHinge.setVelocity(1000);
-        armHinge.setTargetPosition(-800);
+        armHinge.setTargetPosition(-830);
         armHinge.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        while(armHinge.getCurrentPosition()>-790) {
+        while(armHinge.getCurrentPosition()>-820) {
             armHinge.setVelocity(1000);
         }
         claw.setPosition(0.55);
