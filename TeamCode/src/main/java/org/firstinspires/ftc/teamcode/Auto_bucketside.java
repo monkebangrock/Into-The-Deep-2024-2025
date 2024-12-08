@@ -101,9 +101,9 @@ public class Auto_bucketside extends LinearOpMode {
         slideL = hardwareMap.get(DcMotorEx.class, "slideL");
         armHinge = hardwareMap.get(DcMotorEx.class, "armHinge");
         tongue = hardwareMap.get(CRServo.class, "tongue");
-        claw = hardwareMap.get(Servo.class,"claw");
-        wrist = hardwareMap.get(Servo.class,"wrist");
-        bucket = hardwareMap.get(Servo.class,"bucket");
+        claw = hardwareMap.get(Servo.class, "claw");
+        wrist = hardwareMap.get(Servo.class, "wrist");
+        bucket = hardwareMap.get(Servo.class, "bucket");
         IMU imu = hardwareMap.get(IMU.class, "imu");
         //reset encoder
         leftFrontDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
@@ -156,69 +156,72 @@ public class Auto_bucketside extends LinearOpMode {
         wrist.setDirection(Servo.Direction.REVERSE);
         // Wait for the game to start (driver presses START)
         waitForStart();
-        velocity = 1300;
-        bucket(0);
-        //first sample deposit
-        autoforward(14);
-        autocwspin(47);
-        autoback(7);
-        slide(1);
-        velocity = 850;
-        autoback(2);
-        bucket(0.5);
-        autoforward(4);
-        velocity = 1300;
-        slide(0);
-        //grab sample
-        autoccwspin(42);
-        autoleft(3);
-        autoforward(3);
-        grab();
-        deposit();
-        autoback(3);
-        autocwspin(42);
-        velocity = 950;
-        slide(1);
-        autoback(2);
-        bucket(0.5);
-        autoforward(5);
-        slide(0);
-        //sample 2 bucket
-        autoccwspin(40);
-        autoleft(12);
-        grab();
-        deposit();
-        autocwspin(15);
-        autoforward(2);
-        slide(1);
-        bucket(0.5);
-        autoforward(5);
-        slide(0);
-        //set up for teleop
-        wrist(0.5);
-        arm(-350);
-        autoforward(20);
+        while (opModeIsActive()) {
 
-        /*
-        //push sample 2
-        velocity = 1700;
-        autoccwspin(47);
-        autoforward(19);
-        autoleft(13);
-        autoback(30);
-        //park
-        autoforward(35);
-        autocwspin(90);
-        autoforward(20);
-        velocity=600;
-        tongue(-1);
-        autoforward(6);
-        arm(-350);
-        wrist(0.7);*/
+            velocity = 1300;
+            bucket(0);
+            //first sample deposit
+            autoforward(14);
+            autocwspin(47);
+            autoback(7);
+            slide(1);
+            velocity = 850;
+            autoback(2);
+            bucket(0.5);
+            autoforward(4);
+            velocity = 1300;
+            slide(0);
+            //grab sample
+            autoccwspin(42);
+            autoleft(3);
+            autoforward(3);
+            grab();
+            deposit();
+            autoback(3);
+            autocwspin(42);
+            velocity = 950;
+            slide(1);
+            autoback(2);
+            bucket(0.5);
+            autoforward(5);
+            slide(0);
+            //sample 2 bucket
+            autoccwspin(40);
+            autoleft(12);
+            grab();
+            deposit();
+            autocwspin(15);
+            autoforward(2);
+            slide(1);
+            bucket(0.5);
+            autoforward(5);
+            slide(0);
+            //set up for teleop
+            wrist(0.5);
+            arm(-350);
+            autoforward(20);
 
-        telemetry.addData("Path", "Complete");
-        telemetry.update();
-        sleep(1000);  // pause to display final telemetry message.
+            /*
+            //push sample 2
+            velocity = 1700;
+            autoccwspin(47);
+            autoforward(19);
+            autoleft(13);
+            autoback(30);
+            //park
+            autoforward(35);
+            autocwspin(90);
+            autoforward(20);
+            velocity=600;
+            tongue(-1);
+            autoforward(6);
+            arm(-350);
+            wrist(0.7);*/
+
+            telemetry.addData("Path", "Complete");
+            telemetry.update();
+            sleep(1000);  // pause to display final telemetry message.
+        }
     }
 
     /*
@@ -229,20 +232,20 @@ public class Auto_bucketside extends LinearOpMode {
      *  2) Move runs out of time
      *  3) Driver stops the OpMode running.
      */
-    public void autoccwspin (int deg){
+    public void autoccwspin ( int deg){
         leftFrontDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         leftBackDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         rightFrontDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         rightBackDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        leftFrontDrive.setTargetPosition(deg*10);
-        leftBackDrive.setTargetPosition(deg*10);
-        rightFrontDrive.setTargetPosition(deg*10);
-        rightBackDrive.setTargetPosition(deg*10);
+        leftFrontDrive.setTargetPosition(deg * 10);
+        leftBackDrive.setTargetPosition(deg * 10);
+        rightFrontDrive.setTargetPosition(deg * 10);
+        rightBackDrive.setTargetPosition(deg * 10);
         leftFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         leftBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        while(Math.abs(leftFrontDrive.getTargetPosition()-leftFrontDrive.getCurrentPosition())>15){
+        while (Math.abs(leftFrontDrive.getTargetPosition() - leftFrontDrive.getCurrentPosition()) > 15) {
             leftFrontDrive.setVelocity(velocity);
             leftBackDrive.setVelocity(velocity);
             rightFrontDrive.setVelocity(velocity);
@@ -252,20 +255,20 @@ public class Auto_bucketside extends LinearOpMode {
         sleep(100);
     }
 
-    public void autocwspin (int deg){
+    public void autocwspin ( int deg){
         leftFrontDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         leftBackDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         rightFrontDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         rightBackDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        leftFrontDrive.setTargetPosition(-deg*10);
-        leftBackDrive.setTargetPosition(-deg*10);
-        rightFrontDrive.setTargetPosition(-deg*10);
-        rightBackDrive.setTargetPosition(-deg*10);
+        leftFrontDrive.setTargetPosition(-deg * 10);
+        leftBackDrive.setTargetPosition(-deg * 10);
+        rightFrontDrive.setTargetPosition(-deg * 10);
+        rightBackDrive.setTargetPosition(-deg * 10);
         leftFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         leftBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        while(Math.abs(leftFrontDrive.getTargetPosition()-leftFrontDrive.getCurrentPosition())>15){
+        while (Math.abs(leftFrontDrive.getTargetPosition() - leftFrontDrive.getCurrentPosition()) > 15) {
             leftFrontDrive.setVelocity(velocity);
             leftBackDrive.setVelocity(velocity);
             rightFrontDrive.setVelocity(velocity);
@@ -275,20 +278,20 @@ public class Auto_bucketside extends LinearOpMode {
         sleep(100);
     }
 
-    public void autoforward (int in){
+    public void autoforward ( int in){
         leftFrontDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         leftBackDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         rightFrontDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         rightBackDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        leftFrontDrive.setTargetPosition(-in*45);
-        leftBackDrive.setTargetPosition(-in*45);
-        rightFrontDrive.setTargetPosition(in*45);
-        rightBackDrive.setTargetPosition(in*45);
+        leftFrontDrive.setTargetPosition(-in * 45);
+        leftBackDrive.setTargetPosition(-in * 45);
+        rightFrontDrive.setTargetPosition(in * 45);
+        rightBackDrive.setTargetPosition(in * 45);
         leftFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         leftBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        while(Math.abs(leftFrontDrive.getTargetPosition()-leftFrontDrive.getCurrentPosition())>15){
+        while (Math.abs(leftFrontDrive.getTargetPosition() - leftFrontDrive.getCurrentPosition()) > 15) {
             leftFrontDrive.setVelocity(velocity);
             leftBackDrive.setVelocity(velocity);
             rightFrontDrive.setVelocity(velocity);
@@ -298,20 +301,20 @@ public class Auto_bucketside extends LinearOpMode {
         sleep(100);
     }
 
-    public void autoback (int in){
+    public void autoback ( int in){
         leftFrontDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         leftBackDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         rightFrontDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         rightBackDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        leftFrontDrive.setTargetPosition(in*45);
-        leftBackDrive.setTargetPosition(in*45);
-        rightFrontDrive.setTargetPosition(-in*45);
-        rightBackDrive.setTargetPosition(-in*45);
+        leftFrontDrive.setTargetPosition(in * 45);
+        leftBackDrive.setTargetPosition(in * 45);
+        rightFrontDrive.setTargetPosition(-in * 45);
+        rightBackDrive.setTargetPosition(-in * 45);
         leftFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         leftBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        while(Math.abs(leftFrontDrive.getTargetPosition()-leftFrontDrive.getCurrentPosition())>15){
+        while (Math.abs(leftFrontDrive.getTargetPosition() - leftFrontDrive.getCurrentPosition()) > 15) {
             leftFrontDrive.setVelocity(velocity);
             leftBackDrive.setVelocity(velocity);
             rightFrontDrive.setVelocity(velocity);
@@ -320,43 +323,20 @@ public class Auto_bucketside extends LinearOpMode {
         stopdrive();
         sleep(100);
     }
-    public void autoright (int in){
+    public void autoright ( int in){
         leftFrontDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         leftBackDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         rightFrontDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         rightBackDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        leftFrontDrive.setTargetPosition(-in*45);
-        leftBackDrive.setTargetPosition(in*45);
-        rightFrontDrive.setTargetPosition(-in*45);
-        rightBackDrive.setTargetPosition(in*45);
+        leftFrontDrive.setTargetPosition(-in * 45);
+        leftBackDrive.setTargetPosition(in * 45);
+        rightFrontDrive.setTargetPosition(-in * 45);
+        rightBackDrive.setTargetPosition(in * 45);
         leftFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         leftBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        while(Math.abs(leftFrontDrive.getTargetPosition()-leftFrontDrive.getCurrentPosition())>15){
-            leftFrontDrive.setVelocity(velocity);
-            leftBackDrive.setVelocity(velocity);
-            rightFrontDrive.setVelocity(velocity);
-            rightBackDrive.setVelocity(velocity);
-        }
-        stopdrive();
-        sleep(100);
-    }
-
-    public void autoleft (int in){
-        leftFrontDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        leftBackDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        rightFrontDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        rightBackDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        leftFrontDrive.setTargetPosition(in*45);
-        leftBackDrive.setTargetPosition(-in*45);
-        rightFrontDrive.setTargetPosition(in*45);
-        rightBackDrive.setTargetPosition(-in*45);
-        leftFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        leftBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        rightBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        while(Math.abs(leftFrontDrive.getTargetPosition()-leftFrontDrive.getCurrentPosition())>15){
+        while (Math.abs(leftFrontDrive.getTargetPosition() - leftFrontDrive.getCurrentPosition()) > 15) {
             leftFrontDrive.setVelocity(velocity);
             leftBackDrive.setVelocity(velocity);
             rightFrontDrive.setVelocity(velocity);
@@ -366,29 +346,51 @@ public class Auto_bucketside extends LinearOpMode {
         sleep(100);
     }
 
-    public void stopdrive(){
+    public void autoleft ( int in){
+        leftFrontDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        leftBackDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        rightFrontDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        rightBackDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        leftFrontDrive.setTargetPosition(in * 45);
+        leftBackDrive.setTargetPosition(-in * 45);
+        rightFrontDrive.setTargetPosition(in * 45);
+        rightBackDrive.setTargetPosition(-in * 45);
+        leftFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        leftBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        while (Math.abs(leftFrontDrive.getTargetPosition() - leftFrontDrive.getCurrentPosition()) > 15) {
+            leftFrontDrive.setVelocity(velocity);
+            leftBackDrive.setVelocity(velocity);
+            rightFrontDrive.setVelocity(velocity);
+            rightBackDrive.setVelocity(velocity);
+        }
+        stopdrive();
+        sleep(100);
+    }
+
+    public void stopdrive () {
         leftFrontDrive.setPower(0);
         leftBackDrive.setPower(0);
         rightFrontDrive.setPower(0);
         rightBackDrive.setPower(0);
     }
 
-    public void slide(int lvl){
-        if(lvl == 1){
-            while(slideR.getCurrentPosition()<2750){
+    public void slide ( int lvl){
+        if (lvl == 1) {
+            while (slideR.getCurrentPosition() < 2750) {
                 slideR.setVelocity(3000);
                 slideL.setVelocity(3000);
                 slideR.setTargetPosition(2750);
                 slideL.setTargetPosition(2750);
             }
-        }
-        else{
-            while(slideR.getCurrentPosition()>0){
+        } else {
+            while (slideR.getCurrentPosition() > 0) {
                 slideR.setVelocity(3000);
                 slideL.setVelocity(3000);
                 slideR.setTargetPosition(0);
                 slideL.setTargetPosition(0);
-                if(slideR.getCurrentPosition()<30){
+                if (slideR.getCurrentPosition() < 30) {
                     slideR.setVelocity(0);
                     slideL.setVelocity(0);
                 }
@@ -396,17 +398,16 @@ public class Auto_bucketside extends LinearOpMode {
         }
     }
 
-    public void arm(int ticks){
+    public void arm ( int ticks){
         armHinge.setVelocity(1000);
         armHinge.setTargetPosition(ticks);
-        if(ticks>armHinge.getCurrentPosition()){
-            while(armHinge.getCurrentPosition()<ticks){
+        if (ticks > armHinge.getCurrentPosition()) {
+            while (armHinge.getCurrentPosition() < ticks) {
                 armHinge.setVelocity(1000);
                 armHinge.setTargetPosition(ticks);
             }
-        }
-        else{
-            while(armHinge.getCurrentPosition()>ticks){
+        } else {
+            while (armHinge.getCurrentPosition() > ticks) {
                 armHinge.setVelocity(1000);
                 armHinge.setTargetPosition(ticks);
             }
@@ -418,63 +419,63 @@ public class Auto_bucketside extends LinearOpMode {
         telemetry.update();
     }
 
-    public void deposit(){
+    public void deposit () {
         //motor first
         telemetry.addData("Sdlie r", slideR.getCurrentPosition());
         telemetry.addData("tgt", slideR.getTargetPosition());
         telemetry.update();
-        while(slideR.getCurrentPosition()>210 || slideR.getCurrentPosition()<190){
+        while (slideR.getCurrentPosition() > 210 || slideR.getCurrentPosition() < 190) {
             slideR.setVelocity(1000);
             slideL.setVelocity(1000);
             slideR.setTargetPosition(200);
             slideL.setTargetPosition(200);
-            slideLevel=0;
+            slideLevel = 0;
         }
         while (armHinge.getCurrentPosition() < -90) {
             armHinge.setTargetPosition(-90);
             armMoving = true;
         }
         bucket.setPosition(0);
-        while(wrist.getPosition()!= 0){
+        while (wrist.getPosition() != 0) {
             wrist.setPosition(0);
         }
         sleep(250);
         claw.setPosition(0.2);
     }
 
-    public void grab(){
+    public void grab () {
         claw.setPosition(0.2);
         sleep(300);
         wrist.setPosition(0.4);
         armHinge.setVelocity(1000);
         armHinge.setTargetPosition(-830);
         armHinge.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        while(armHinge.getCurrentPosition()>-820) {
+        while (armHinge.getCurrentPosition() > -820) {
             armHinge.setVelocity(1000);
         }
         claw.setPosition(0.55);
         sleep(500);
     }
 
-    public void tongue(int pwr){ //-1 is out, 1 is in
+    public void tongue ( int pwr){ //-1 is out, 1 is in
         tongue.setPower(pwr);
     }
 
-    public void claw(double pos){ //0.2 is open, 0.55 is closed
+    public void claw ( double pos){ //0.2 is open, 0.55 is closed
 
-        while(claw.getPosition() != pos){
+        while (claw.getPosition() != pos) {
             claw.setPosition(pos);
         }
     }
 
-    public void wrist(double pos){ //0 is back, 0.15 is in line w/ arm
-        while(wrist.getPosition() != pos){
+    public void wrist ( double pos){ //0 is back, 0.15 is in line w/ arm
+        while (wrist.getPosition() != pos) {
             wrist.setPosition(pos);
         }
     }
 
-    public void bucket(double pos){
-        while(bucket.getPosition() != pos){
+    public void bucket ( double pos){
+        while (bucket.getPosition() != pos) {
             bucket.setPosition(pos);
         }
         sleep(300);

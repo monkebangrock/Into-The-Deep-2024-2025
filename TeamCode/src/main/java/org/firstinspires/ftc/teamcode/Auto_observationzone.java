@@ -156,25 +156,28 @@ public class Auto_observationzone extends LinearOpMode {
         wrist.setDirection(Servo.Direction.REVERSE);
         // Wait for the game to start (driver presses START)
         waitForStart();
-        velocity = 1100;
-        bucket(0);
-        //park
-        autoright(24);
+        while (opModeIsActive()) {
 
-        //hang test?
-        /*velocity = 1100;
-        claw.setPosition(0.50);
-        sleep(500);
-        wrist(0.15);
-        autoforward(12);
-        arm(-500);
-        claw(0.2);
-        autoback(12);
-        autoright(35);*/
+            velocity = 1100;
+            bucket(0);
+            //park
+            autoright(24);
 
-        telemetry.addData("Path", "Complete");
-        telemetry.update();
-        sleep(1000);  // pause to display final telemetry message.
+            //hang test?
+            /*velocity = 1100;
+            claw.setPosition(0.50);
+            sleep(500);
+            wrist(0.15);
+            autoforward(12);
+            arm(-500);
+            claw(0.2);
+            autoback(12);
+            autoright(35);*/
+
+            telemetry.addData("Path", "Complete");
+            telemetry.update();
+            sleep(1000);  // pause to display final telemetry message.
+        }
     }
 
     /*
