@@ -162,12 +162,12 @@ public class Auto_bucketside extends LinearOpMode {
             bucket(0);
             //first sample deposit
             autoforward(14);
-            autocwspin(47);
+            autocwspin(45);
             autoback(7);
             slide(1);
             velocity = 850;
             autoback(2);
-            bucket(0.5);
+            bucket(0.3);
             autoforward(4);
             velocity = 1300;
             slide(0);
@@ -182,24 +182,25 @@ public class Auto_bucketside extends LinearOpMode {
             velocity = 950;
             slide(1);
             autoback(2);
-            bucket(0.5);
-            autoforward(5);
+            bucket(0.3);
+            autoforward(7);
             slide(0);
             //sample 2 bucket
             autoccwspin(40);
             autoleft(12);
+            autoback(1);
             grab();
             deposit();
-            autocwspin(15);
-            autoforward(2);
+            autocwspin(20);
             slide(1);
-            bucket(0.5);
-            autoforward(5);
+            autoback(2);
+            bucket(0.3);
+            wrist(0.5);
+            autoforward(7);
             slide(0);
             //set up for teleop
-            wrist(0.5);
             arm(-350);
-            autoforward(20);
+            //autoforward(20);
 
             /*
             //push sample 2
@@ -448,9 +449,9 @@ public class Auto_bucketside extends LinearOpMode {
         sleep(300);
         wrist.setPosition(0.4);
         armHinge.setVelocity(1000);
-        armHinge.setTargetPosition(-830);
+        armHinge.setTargetPosition(-820);
         armHinge.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        while (armHinge.getCurrentPosition() > -820 && opModeIsActive()) {
+        while (armHinge.getCurrentPosition() > -810 && opModeIsActive()) {
             armHinge.setVelocity(1000);
         }
         claw.setPosition(0.55);

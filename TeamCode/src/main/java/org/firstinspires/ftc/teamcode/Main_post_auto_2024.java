@@ -434,7 +434,7 @@ public class Main_post_auto_2024 extends LinearOpMode {
 
     public void door(){//open-close
         if(!doorPressed){
-            if(gamepad2.a && bucket.getPosition()==0.5){
+            if(gamepad2.a && bucket.getPosition()==0.3){
                 doorPressed = true;
                 bucket.setPosition(0);
                 pattern = RevBlinkinLedDriver.BlinkinPattern.RED;
@@ -442,7 +442,7 @@ public class Main_post_auto_2024 extends LinearOpMode {
             }
             else if(gamepad2.a){
                 doorPressed = true;
-                bucket.setPosition(0.5);
+                bucket.setPosition(0.3);
                 pattern = RevBlinkinLedDriver.BlinkinPattern.GREEN;
                 blinkinLedDriver.setPattern(pattern);
             }
