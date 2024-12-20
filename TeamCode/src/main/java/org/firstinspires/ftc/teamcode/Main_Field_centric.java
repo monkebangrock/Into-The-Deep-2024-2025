@@ -200,6 +200,8 @@ public class Main_Field_centric extends LinearOpMode {
         leftBackDrive.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         rightFrontDrive.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         rightBackDrive.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        imu.resetYaw();
+
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             /*scaling equation:
@@ -220,7 +222,7 @@ public class Main_Field_centric extends LinearOpMode {
             // This button choice was made so that it is hard to hit on accident,
             // it can be freely changed based on preference.
             // The equivalent button is start on Xbox-style controllers.
-            if (gamepad1.options) {
+            if (gamepad1.x) {
                 imu.resetYaw();
             }
 
@@ -236,15 +238,16 @@ public class Main_Field_centric extends LinearOpMode {
             // This ensures all the powers maintain the same ratio,
             // but only if at least one is out of the range [-1, 1]
             double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
-            double frontLeftPower = (rotY + rotX + rx) / denominator;
-            double backLeftPower = (rotY - rotX + rx) / denominator;
-            double frontRightPower = (rotY - rotX - rx) / denominator;
-            double backRightPower = (rotY + rotX - rx) / denominator;
+            double frontLeftPower = (rotY + rotX + rxscaled) / denominator;
+            double backLeftPower = (rotY - rotX + rxscaled) / denominator;
+            double frontRightPower = (rotY - rotX - rxscaled) / denominator;
+            double backRightPower = (rotY + rotX - rxscaled) / denominator;
 
             leftFrontDrive.setPower(frontLeftPower);
             leftBackDrive.setPower(backLeftPower);
             rightFrontDrive.setPower(frontRightPower);
             rightBackDrive.setPower(backRightPower);
+
 
             // Show the elapsed game time and wheel power.
 
