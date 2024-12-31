@@ -30,7 +30,6 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -41,7 +40,6 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 
 /*
@@ -98,6 +96,8 @@ public class Main_2024 extends LinearOpMode {
     boolean xPressed;
     boolean yPressed;
     boolean doorPressed;
+    boolean depositMode;
+    boolean bPressed;
     RevBlinkinLedDriver blinkinLedDriver;
     RevBlinkinLedDriver.BlinkinPattern pattern = RevBlinkinLedDriver.BlinkinPattern.HOT_PINK;
 
@@ -157,6 +157,8 @@ public class Main_2024 extends LinearOpMode {
         xPressed = false;
         yPressed = false;
         doorPressed = false;
+        depositMode = false;
+        bPressed = false;
 
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
@@ -232,10 +234,11 @@ public class Main_2024 extends LinearOpMode {
             slide();
             arm();
             tongue();
-            deposit();
+            grabDeposit();
             claw();
             door();
             lights();
+            tiltHang();
             //telemetry.addData("arm pos", armHinge.getCurrentPosition());
             //telemetry.addData("tgt pos", armHinge.getTargetPosition());
             //telemetry.update();
@@ -378,9 +381,9 @@ public class Main_2024 extends LinearOpMode {
         }
     }
 
-    public void deposit(){
+    public void grabDeposit(){
         if(!yPressed) {
-            if (gamepad2.y) { //grab specimen forward position
+            if (gamepad2.y && depositMode) { //grab specimen forward position
                 yPressed = true;
                 //motor first
                 telemetry.addData("Sdlie r", slideR.getCurrentPosition());
@@ -405,6 +408,32 @@ public class Main_2024 extends LinearOpMode {
                 }
                 sleep(250);
                 claw.setPosition(0.2);
+                depositMode = false;
+            }
+            else if(gamepad2.y){
+                yPressed = true;
+                while(slideR.getCurrentPosition()>1360){
+                    slideR.setVelocity(1000);
+                    slideL.setVelocity(1000);
+                    slideR.setTargetPosition(210);
+                    slideL.setTargetPosition(210);
+                    slideLevel=0;
+                }
+                while (armHinge.getCurrentPosition() > -720) {
+                    armHinge.setTargetPosition(-720);
+                    if(armHinge.getCurrentPosition() < -550){
+                        tongue.setPower(-1);
+                    }
+                    else{
+                        tongue.setPower(0);
+                    }
+                    armMoving = true;
+                }
+                claw.setPosition(0.2);
+                while(wrist.getPosition()!= 0.4){
+                    wrist.setPosition(0.4);
+                }
+                depositMode = true;
             }
         }
         else if (!gamepad2.y){
@@ -414,7 +443,7 @@ public class Main_2024 extends LinearOpMode {
     }
 
     public void claw(){//open-close
-        if(armHinge.getCurrentPosition()<-300){
+        if(armHinge.getCurrentPosition()<-300 && !bPressed){
             wrist.setPosition(0.4);
         }
         if(!xPressed){
@@ -436,7 +465,7 @@ public class Main_2024 extends LinearOpMode {
 
     public void door(){//open-close
         if(!doorPressed){
-            if(gamepad2.a && bucket.getPosition()==0.5){
+            if(gamepad2.a && bucket.getPosition()==0.3){
                 doorPressed = true;
                 bucket.setPosition(0);
                 pattern = RevBlinkinLedDriver.BlinkinPattern.RED;
@@ -444,7 +473,7 @@ public class Main_2024 extends LinearOpMode {
             }
             else if(gamepad2.a){
                 doorPressed = true;
-                bucket.setPosition(0.5);
+                bucket.setPosition(0.3);
                 pattern = RevBlinkinLedDriver.BlinkinPattern.GREEN;
                 blinkinLedDriver.setPattern(pattern);
             }
@@ -455,6 +484,40 @@ public class Main_2024 extends LinearOpMode {
             }
         }
     }
+
+    public void tiltHang(){
+        if(!bPressed){
+            if(gamepad2.b){
+                bPressed = true;
+                wrist.setPosition(0);
+                while (armHinge.getCurrentPosition() > -1400) {
+                    armHinge.setTargetPosition(-1400);
+                    armMoving = true;
+                }
+                int temp = (int)(getRuntime());
+                while(getRuntime() < temp+1){
+                    tongue.setPower(-1);
+                }
+                temp = (int)(getRuntime());
+                while(getRuntime()< temp+1){
+                    leftFrontDrive.setPower(-1);
+                    leftBackDrive.setPower(-1);
+                    rightFrontDrive.setPower(-1);
+                    rightBackDrive.setPower(-1);
+                }
+                leftFrontDrive.setPower(0);
+                leftBackDrive.setPower(0);
+                rightFrontDrive.setPower(0);
+                rightBackDrive.setPower(0);
+            }
+        }
+        else{
+            if (!gamepad2.b){
+                bPressed = false;
+            }
+        }
+    }
+
 
     public void lights(){
         if(runtime.seconds()<=60 && runtime.seconds()>=59){
