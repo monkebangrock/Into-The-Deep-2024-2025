@@ -63,14 +63,14 @@ public class MecanumDrive {
                 RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
 
         // drive model parameters
-        public double inPerTick = 1; // If you're using OTOS/Pinpoint leave this at 1 (all values will be in inches, 1 tick = 1 inch)
-        public double lateralInPerTick = 0.5388344649552772; //inPerTick; // Tune this with LateralRampLogger (even if you use OTOS/Pinpoint)
-        public double trackWidthTicks = 14.85702570320639;
+        public double inPerTick = 1; // SparkFun OTOS Note: you can probably leave this at 1
+        public double lateralInPerTick = 0.8050473938904503;
+        public double trackWidthTicks = 0;
 
         // feedforward parameters (in tick units)
-        public double kS = 1.373;
-        public double kV = 0.132;
-        public double kA = 0.015;
+        public double kS = 1.0496420005709086;
+        public double kV = -0.1425917786921812;
+        public double kA = 0;
 
         // path profile parameters (in inches)
         public double maxWheelVel = 50;

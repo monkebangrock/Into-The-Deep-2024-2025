@@ -156,25 +156,28 @@ public class Auto_observationzone extends LinearOpMode {
         wrist.setDirection(Servo.Direction.REVERSE);
         // Wait for the game to start (driver presses START)
         waitForStart();
-        velocity = 1100;
-        bucket(0);
-        //park
-        autoright(24);
+        while (opModeIsActive()) {
 
-        //hang test?
-        /*velocity = 1100;
-        claw.setPosition(0.50);
-        sleep(500);
-        wrist(0.15);
-        autoforward(12);
-        arm(-500);
-        claw(0.2);
-        autoback(12);
-        autoright(35);*/
+            velocity = 1100;
+            bucket(0);
+            //park
+            autoright(24);
 
-        telemetry.addData("Path", "Complete");
-        telemetry.update();
-        sleep(1000);  // pause to display final telemetry message.
+            //hang test?
+            /*velocity = 1100;
+            claw.setPosition(0.50);
+            sleep(500);
+            wrist(0.15);
+            autoforward(12);
+            arm(-500);
+            claw(0.2);
+            autoback(12);
+            autoright(35);*/
+
+            telemetry.addData("Path", "Complete");
+            telemetry.update();
+            sleep(1000);  // pause to display final telemetry message.
+        }
     }
 
     /*
@@ -198,7 +201,7 @@ public class Auto_observationzone extends LinearOpMode {
         leftBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        while(Math.abs(leftFrontDrive.getTargetPosition()-leftFrontDrive.getCurrentPosition())>15){
+        while(Math.abs(leftFrontDrive.getTargetPosition()-leftFrontDrive.getCurrentPosition())>15 && opModeIsActive()){
             leftFrontDrive.setVelocity(velocity);
             leftBackDrive.setVelocity(velocity);
             rightFrontDrive.setVelocity(velocity);
@@ -221,7 +224,7 @@ public class Auto_observationzone extends LinearOpMode {
         leftBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        while(Math.abs(leftFrontDrive.getTargetPosition()-leftFrontDrive.getCurrentPosition())>15){
+        while(Math.abs(leftFrontDrive.getTargetPosition()-leftFrontDrive.getCurrentPosition())>15 && opModeIsActive()){
             leftFrontDrive.setVelocity(velocity);
             leftBackDrive.setVelocity(velocity);
             rightFrontDrive.setVelocity(velocity);
@@ -244,7 +247,7 @@ public class Auto_observationzone extends LinearOpMode {
         leftBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        while(Math.abs(leftFrontDrive.getTargetPosition()-leftFrontDrive.getCurrentPosition())>15){
+        while(Math.abs(leftFrontDrive.getTargetPosition()-leftFrontDrive.getCurrentPosition())>15 && opModeIsActive()){
             leftFrontDrive.setVelocity(velocity);
             leftBackDrive.setVelocity(velocity);
             rightFrontDrive.setVelocity(velocity);
@@ -267,7 +270,7 @@ public class Auto_observationzone extends LinearOpMode {
         leftBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        while(Math.abs(leftFrontDrive.getTargetPosition()-leftFrontDrive.getCurrentPosition())>15){
+        while(Math.abs(leftFrontDrive.getTargetPosition()-leftFrontDrive.getCurrentPosition())>15 && opModeIsActive()){
             leftFrontDrive.setVelocity(velocity);
             leftBackDrive.setVelocity(velocity);
             rightFrontDrive.setVelocity(velocity);
@@ -289,7 +292,7 @@ public class Auto_observationzone extends LinearOpMode {
         leftBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        while(Math.abs(leftFrontDrive.getTargetPosition()-leftFrontDrive.getCurrentPosition())>15){
+        while(Math.abs(leftFrontDrive.getTargetPosition()-leftFrontDrive.getCurrentPosition())>15 && opModeIsActive()){
             leftFrontDrive.setVelocity(velocity);
             leftBackDrive.setVelocity(velocity);
             rightFrontDrive.setVelocity(velocity);
@@ -312,7 +315,7 @@ public class Auto_observationzone extends LinearOpMode {
         leftBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        while(Math.abs(leftFrontDrive.getTargetPosition()-leftFrontDrive.getCurrentPosition())>15){
+        while(Math.abs(leftFrontDrive.getTargetPosition()-leftFrontDrive.getCurrentPosition())>15 && opModeIsActive()){
             leftFrontDrive.setVelocity(velocity);
             leftBackDrive.setVelocity(velocity);
             rightFrontDrive.setVelocity(velocity);
@@ -331,7 +334,7 @@ public class Auto_observationzone extends LinearOpMode {
 
     public void slide(int lvl){
         if(lvl == 1){
-            while(slideR.getCurrentPosition()<2750){
+            while(slideR.getCurrentPosition()<2750 && opModeIsActive()){
                 slideR.setVelocity(3000);
                 slideL.setVelocity(3000);
                 slideR.setTargetPosition(2750);
@@ -339,7 +342,7 @@ public class Auto_observationzone extends LinearOpMode {
             }
         }
         else{
-            while(slideR.getCurrentPosition()>0){
+            while(slideR.getCurrentPosition()>0 && opModeIsActive()){
                 slideR.setVelocity(3000);
                 slideL.setVelocity(3000);
                 slideR.setTargetPosition(0);
@@ -352,13 +355,13 @@ public class Auto_observationzone extends LinearOpMode {
         armHinge.setVelocity(1000);
         armHinge.setTargetPosition(ticks);
         if(ticks>armHinge.getCurrentPosition()){
-            while(armHinge.getCurrentPosition()<ticks){
+            while(armHinge.getCurrentPosition()<ticks && opModeIsActive()){
                 armHinge.setVelocity(1000);
                 armHinge.setTargetPosition(ticks);
             }
         }
         else{
-            while(armHinge.getCurrentPosition()>ticks){
+            while(armHinge.getCurrentPosition()>ticks && opModeIsActive()){
                 armHinge.setVelocity(1000);
                 armHinge.setTargetPosition(ticks);
             }
@@ -375,14 +378,14 @@ public class Auto_observationzone extends LinearOpMode {
         telemetry.addData("Sdlie r", slideR.getCurrentPosition());
         telemetry.addData("tgt", slideR.getTargetPosition());
         telemetry.update();
-        while(slideR.getCurrentPosition()>210 || slideR.getCurrentPosition()<190){
+        while((slideR.getCurrentPosition()>210 || slideR.getCurrentPosition()<190) && opModeIsActive()){
             slideR.setVelocity(1000);
             slideL.setVelocity(1000);
             slideR.setTargetPosition(200);
             slideL.setTargetPosition(200);
             slideLevel=0;
         }
-        while (armHinge.getCurrentPosition() < -90) {
+        while (armHinge.getCurrentPosition() < -90 && opModeIsActive()) {
             armHinge.setTargetPosition(-90);
             armMoving = true;
         }
@@ -401,7 +404,7 @@ public class Auto_observationzone extends LinearOpMode {
         armHinge.setVelocity(1000);
         armHinge.setTargetPosition(-800);
         armHinge.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        while(armHinge.getCurrentPosition()>-790) {
+        while((armHinge.getCurrentPosition()>-790) && opModeIsActive()) {
             armHinge.setVelocity(1000);
         }
         claw.setPosition(0.55);
@@ -414,19 +417,19 @@ public class Auto_observationzone extends LinearOpMode {
 
     public void claw(double pos){ //0.2 is open, 0.55 is closed
 
-        while(claw.getPosition() != pos){
+        while(claw.getPosition() != pos && opModeIsActive()){
             claw.setPosition(pos);
         }
     }
 
     public void wrist(double pos){ //0 is back, 0.15 is in line w/ arm
-        while(wrist.getPosition() != pos){
+        while(wrist.getPosition() != pos && opModeIsActive()){
             wrist.setPosition(pos);
         }
     }
 
     public void bucket(double pos){
-        while(bucket.getPosition() != pos){
+        while(bucket.getPosition() != pos && opModeIsActive()){
             bucket.setPosition(pos);
         }
         sleep(300);
