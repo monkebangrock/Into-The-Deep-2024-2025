@@ -39,7 +39,20 @@ public class SparkFunOTOSDrive extends MecanumDrive {
         // tweaked slightly to compensate for imperfect mounting (eg. 1.3 degrees).
 
         // RR localizer note: These units are inches and radians.
-        public SparkFunOTOS.Pose2D offset = new SparkFunOTOS.Pose2D(0, 0, Math.toRadians(0));
+        // RC: This was a bit painful to figure out, as the documented tuning steps don't work very well.
+        //     However we can calculate exactly where the sensor is mounted based on the drivetrain structure and GoBilda specs:
+        //     From testing (i.e. The OTOSHeadingOffsetTuner) the heading is -90 degrees (and pretty much exactly 90).
+        //     For the position offset, I found the OTOSPositionOffsetTuner not very effective. However we can calculate based on where we mounted:
+        //       - The crossbar that the sensor is mounted in, is a 10 hole U-channel: https://www.gobilda.com/1120-series-u-channel-10-hole-264mm-length/
+        //         - We could not mount it dead center because of the way the mounting holes lined up.  Center is in between 2 of the large bearing holes.
+        //         - From the diagrams, the sensor is exactly 12mm to the right of center.
+        //         - 12mm / 25.4 = 0.47244094 inches
+        //         - When the drivetrain is oriented in 0 degrees (i.e. pointed towards +x direction), this offset is negative y-direction.
+        //       - The crossbar is mounted on the 2nd hole of a 17 hole U-channel: https://www.gobilda.com/1120-series-u-channel-17-hole-432mm-length/
+        //         - From the diagrams, center of the 2nd hole (where the sensor sits) is exactly 168mm from the center.
+        //         - 168mm / 25.4 = 6.61417323 inches
+        //         - When the drivetrain is oriented in 0 degrees (i.e. pointed towards +x direction), this offset is negative x-direction.
+        public SparkFunOTOS.Pose2D offset = new SparkFunOTOS.Pose2D(0.0, -(2.0/25.4), Math.toRadians(90));
 
         // Here we can set the linear and angular scalars, which can compensate for
         // scaling issues with the sensor measurements. Note that as of firmware
@@ -57,8 +70,8 @@ public class SparkFunOTOSDrive extends MecanumDrive {
         // multiple speeds to get an average, then set the linear scalar to the
         // inverse of the error. For example, if you move the robot 100 inches and
         // the sensor reports 103 inches, set the linear scalar to 100/103 = 0.971
-        public double linearScalar = 0;
-        public double angularScalar = 0;
+        public double linearScalar = (100.0/105.0);
+        public double angularScalar = 0.994;
     }
 
     public static SparkFunOTOSDrive.Params PARAMS = new SparkFunOTOSDrive.Params();
