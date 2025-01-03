@@ -135,37 +135,58 @@ public class autoTest extends LinearOpMode {
 
         // Wait for the game to start (driver presses START)
         waitForStart();
-        Pose2d initialPose = new Pose2d(0, 72, Math.toRadians(270));
+        Pose2d initialPose = new Pose2d(0, 63, Math.toRadians(270));
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
         int visionOutputPosition = 1;
         Action tab1 = drive.actionBuilder(initialPose)
                 .lineToY(40.5)
-                .splineTo(new Vector2d(48.0,40.5), PI/2)
-                .setTangent(65.433)
-                .lineToXLinearHeading(56,5* PI/4)
+                .setTangent(PI/2)
+                .splineTo(new Vector2d(48.0,40.5), PI) //fix
+
+                /*
+                .lineToY(43.0)
+                .strafeTo(Vector2d(48.0,40.5))  //if spline no work
+                .turn(-PI)
+                */
+
+                .strafeTo(new Vector2d(56.0, 57.5))
+                .turn(3*PI/4)
                 //dump
-                .setTangent(283.24)
-                .lineToXLinearHeading(4,3* PI/2)
+
+                .strafeTo(new Vector2d(60.0, 40.5))
+                .turn(PI/4)
                 //pick up
-                .setTangent(103.24)
-                .lineToXLinearHeading(56, 5* PI/4)
+                .strafeTo(new Vector2d(56.0, 57.5))
+                .turn(-PI/4)
                 //dump
-                .setTangent(333.435)
-                .lineToXLinearHeading(61,333.435)
+                .strafeTo(new Vector2d(61.0,55.0))
+                .turn(PI*0.6)
                 //pick up
-                .setTangent(153.435)
-                .lineToXLinearHeading(56,5* PI/4)
+                .strafeTo(new Vector2d(56.0, 57.5))
+                .turn(-PI*0.6)
                 //dump
-                .splineToLinearHeading(new Pose2d(24.0,0,0), Math.PI)
-                //.lineToLinearHeading(new Pose2d(56.0,57.5,5*Math.PI/4))
-                //dump
-                //.lineToLinearHeading(new Pose2d(60.0,40.5,3*Math.PI/2))
-                //.lineToLinearHeading(new Pose2d(56.0,57.5,5*Math.PI/4))
-                //dump
-                //.lineToLinearHeading(new Pose2d(61.0,55.0,0.747*Math.PI))
-                //.lineToLinearHeading(new Pose2d(56.0,57.5,5*Math.PI/4))
-                //dump
+
+                .strafeTo(new Vector2d(30.0,0.0))
                 .build();
+                /* red side
+                val a = actionBuilder(Pose2d(0.0, -63.0, PI/2))
+                .lineToY(-40.5)
+                .setTangent(-PI/2)
+                .splineTo(Vector2d(48.0,-40.5), PI)
+                .turn(PI/2)
+                .strafeTo(Vector2d(56.0, -57.5))
+                .turn(PI/4)
+                .strafeTo( Vector2d(60.0, -40.5))
+                .turn(-PI/4)
+                .strafeTo( Vector2d(56.0, -57.5))
+                .turn(PI/4)
+                .strafeTo(Vector2d(61.0,-55.0))
+                .turn(-PI*0.6)
+                .strafeTo( Vector2d(56.0, -57.5))
+                .turn(PI*0.6)
+                .strafeTo( Vector2d(-63.0,-63.0))
+                .build()
+                 */
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
 
