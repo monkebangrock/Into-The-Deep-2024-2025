@@ -73,7 +73,7 @@ import com.acmerobotics.roadrunner.ftc.Actions;
  */
 
 @Autonomous(name="Robot: Auto Drive By Encoder", group="Robot")
-@Disabled
+//@Disabled
 public class autoTest extends LinearOpMode {
 
     /* Declare OpMode members. */
@@ -134,11 +134,11 @@ public class autoTest extends LinearOpMode {
         telemetry.update();
 
         // Wait for the game to start (driver presses START)
-        waitForStart();
+
         Pose2d initialPose = new Pose2d(0, 63, Math.toRadians(270));
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
         int visionOutputPosition = 1;
-        Action tab1 = drive.actionBuilder(initialPose)
+        TrajectoryActionBuilder tab1 = drive.actionBuilder(initialPose)
                 .lineToY(40.5)
                 .setTangent(PI/2)
                 .splineTo(new Vector2d(48.0,40.5), PI) //fix
@@ -166,30 +166,40 @@ public class autoTest extends LinearOpMode {
                 .turn(-PI*0.6)
                 //dump
 
-                .strafeTo(new Vector2d(30.0,0.0))
-                .build();
-                /* red side
-                val a = actionBuilder(Pose2d(0.0, -63.0, PI/2))
+                .strafeTo(new Vector2d(30.0,0.0));
+
+
+                TrajectoryActionBuilder tab2 = drive.actionBuilder(new Pose2d(0.0, -63.0, PI/2))
                 .lineToY(-40.5)
                 .setTangent(-PI/2)
-                .splineTo(Vector2d(48.0,-40.5), PI)
+                .splineTo(new Vector2d(48.0,-40.5), PI)
                 .turn(PI/2)
-                .strafeTo(Vector2d(56.0, -57.5))
+                .strafeTo(new Vector2d(56.0, -57.5))
                 .turn(PI/4)
-                .strafeTo( Vector2d(60.0, -40.5))
+                .strafeTo(new Vector2d(60.0, -40.5))
                 .turn(-PI/4)
-                .strafeTo( Vector2d(56.0, -57.5))
+                .strafeTo(new Vector2d(56.0, -57.5))
                 .turn(PI/4)
-                .strafeTo(Vector2d(61.0,-55.0))
+                .strafeTo(new Vector2d(61.0,-55.0))
                 .turn(-PI*0.6)
-                .strafeTo( Vector2d(56.0, -57.5))
+                .strafeTo(new Vector2d(56.0, -57.5))
                 .turn(PI*0.6)
-                .strafeTo( Vector2d(-63.0,-63.0))
-                .build()
-                 */
+                .strafeTo(new Vector2d(-63.0,-63.0));
+
+
+        waitForStart();
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
 
+        if(isStopRequested()) return;
+        Action chosenOne = tab1.build();
+
+        Actions.runBlocking(
+                new SequentialAction(
+                        chosenOne
+                        //split up trajectory ltr
+                )
+        );
 
         telemetry.addData("Path", "Complete");
         telemetry.update();
