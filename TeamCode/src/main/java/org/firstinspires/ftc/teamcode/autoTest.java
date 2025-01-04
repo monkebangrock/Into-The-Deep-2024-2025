@@ -110,12 +110,12 @@ public class autoTest extends LinearOpMode {
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // When run, this OpMode should start both motors driving forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
-        leftFront.setDirection(DcMotor.Direction.FORWARD);
+        leftFront.setDirection(DcMotor.Direction.REVERSE);
         leftBack.setDirection(DcMotor.Direction.REVERSE);
-        rightFront.setDirection(DcMotor.Direction.REVERSE);
+        rightFront.setDirection(DcMotor.Direction.FORWARD);
         rightBack.setDirection(DcMotor.Direction.FORWARD);
 
-        leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        /*leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -129,14 +129,15 @@ public class autoTest extends LinearOpMode {
                 leftFront.getCurrentPosition(),
                 leftBack.getCurrentPosition(),
                 rightFront.getCurrentPosition(),
-                rightBack.getCurrentPosition());
+                rightBack.getCurrentPosition());*/
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
         // Wait for the game to start (driver presses START)
 
         Pose2d initialPose = new Pose2d(0, 63, Math.toRadians(270));
-        MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
+        SparkFunOTOSDrive drive = new SparkFunOTOSDrive(hardwareMap, initialPose);
+
         int visionOutputPosition = 1;
         TrajectoryActionBuilder tab1 = drive.actionBuilder(initialPose)
                 .lineToY(40.5)

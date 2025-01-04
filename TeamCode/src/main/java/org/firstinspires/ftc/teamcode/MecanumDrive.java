@@ -73,7 +73,7 @@ public class MecanumDrive {
         public double kA = 0.015;
 
         // path profile parameters (in inches)
-        public double maxWheelVel = 50;
+        public double maxWheelVel = 35;
         public double minProfileAccel = -30;
         public double maxProfileAccel = 50;
 
