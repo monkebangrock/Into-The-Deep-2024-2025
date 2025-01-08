@@ -40,8 +40,8 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 /*
  * This file contains an example of a Linear "OpMode".
@@ -73,7 +73,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 @TeleOp
 //@Disabled
-public class Main_Field_centric extends LinearOpMode {
+public class MainFieldCentricPostAuto2024 extends LinearOpMode {
 
     // Declare OpMode members for each of the 4 motors.
     private ElapsedTime runtime = new ElapsedTime();
@@ -87,7 +87,8 @@ public class Main_Field_centric extends LinearOpMode {
     private CRServo tongue;
     private Servo claw;
     private Servo wrist;
-    private Servo bucket;
+    private Servo backWrist;
+    private Servo backClaw;
     int slideTarget;
     boolean slideMoving;
     int slideLevel;
@@ -96,7 +97,11 @@ public class Main_Field_centric extends LinearOpMode {
     boolean armMoving;
     boolean xPressed;
     boolean yPressed;
-    boolean doorPressed;
+    boolean aPressed;
+    boolean depositMode;
+    boolean bPressed;
+    boolean bucketMode;
+    boolean guidePressed;
     RevBlinkinLedDriver blinkinLedDriver;
     RevBlinkinLedDriver.BlinkinPattern pattern = RevBlinkinLedDriver.BlinkinPattern.HOT_PINK;
 
@@ -116,7 +121,8 @@ public class Main_Field_centric extends LinearOpMode {
         tongue = hardwareMap.get(CRServo.class, "tongue");
         claw = hardwareMap.get(Servo.class,"claw");
         wrist = hardwareMap.get(Servo.class,"wrist");
-        bucket = hardwareMap.get(Servo.class,"bucket");
+        backWrist = hardwareMap.get(Servo.class, "backWrist");
+        backClaw = hardwareMap.get(Servo.class, "backClaw");
         blinkinLedDriver = hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");
 
         //reset encoder
@@ -124,9 +130,6 @@ public class Main_Field_centric extends LinearOpMode {
         leftBackDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         rightFrontDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         rightBackDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        slideR.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        slideL.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        armHinge.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         //brake motors
         leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -150,9 +153,11 @@ public class Main_Field_centric extends LinearOpMode {
         armMoving = false;
         xPressed = false;
         yPressed = false;
-        doorPressed = false;
-
-
+        aPressed = false;
+        depositMode = false;
+        bPressed = false;
+        bucketMode = false;
+        guidePressed = false;
 
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
@@ -171,9 +176,11 @@ public class Main_Field_centric extends LinearOpMode {
         slideL.setDirection(DcMotorSimple.Direction.REVERSE);
         armHinge.setDirection(DcMotorSimple.Direction.REVERSE);
         wrist.setDirection(Servo.Direction.REVERSE);
-        bucket.setPosition(0);
-        wrist.setPosition(0.15);
+        backWrist.setDirection(Servo.Direction.REVERSE);
+        wrist.setPosition(0);
         claw.setPosition(0.2);
+        backWrist.setPosition(0);
+        backClaw.setPosition(0);
 
         // Retrieve the IMU from the hardware map
         IMU imu = hardwareMap.get(IMU.class, "imu");
@@ -248,110 +255,209 @@ public class Main_Field_centric extends LinearOpMode {
             rightFrontDrive.setPower(frontRightPower);
             rightBackDrive.setPower(backRightPower);
 
-
-            // Show the elapsed game time and wheel power.
-
-            /*telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Angle", imu.getRobotYawPitchRollAngles());
-            telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontPower, rightFrontPower);
-            telemetry.addData("Back  left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
-            telemetry.update();*/
             slide();
             arm();
             tongue();
-            deposit();
+            grabDeposit();
             claw();
-            door();
             lights();
-            //telemetry.addData("arm pos", armHinge.getCurrentPosition());
-            //telemetry.addData("tgt pos", armHinge.getTargetPosition());
-            //telemetry.update();
+            tiltHang();
+            backClaw();
+            telemetry.addData("slide height", slideR.getCurrentPosition());
+            if(bucketMode){
+                telemetry.addData("Mode: ", "Bucket/Hang");
+            }
+            else{
+                telemetry.addData("Mode: ", "Specimen");
+            }
+            telemetry.addData("arm pos", armHinge.getCurrentPosition());
+            telemetry.addData("tgt pos", armHinge.getTargetPosition());
+            telemetry.update();
         }
     }
 
     public void slide(){
-        if(slideR.getCurrentPosition() < 20 && slideLevel == 0){
-            //turns off motors when at 0 position
-            /*slideR.setVelocity(0);
-            slideL.setVelocity(0);
-            slideR.setPower(0);
-            slideL.setPower(0);*/
-            slideR.setMotorDisable();
-            slideL.setMotorDisable();
-            if(gamepad2.dpad_down && slideLevel == 0){
-                slideInput = true;
-                slideTarget = 0;
-                slideR.setMotorEnable();
-                slideL.setMotorEnable();
-                slideR.setVelocity(5000);
-                slideL.setVelocity(5000);
-                slideR.setTargetPosition(slideTarget);
-                slideL.setTargetPosition(slideTarget);
-                slideLevel = -1;
-                telemetry.addData("level:","0");
-                telemetry.addData("power:", "OFF");
-                telemetry.update();
+        if(!guidePressed){
+            if(gamepad2.guide && bucketMode){
+                guidePressed = true;
+                bucketMode = false;
+            }
+            else if(gamepad2.guide){
+                guidePressed = true;
+                bucketMode = true;
             }
         }
-        if (!slideInput){ //slide input true is dpad clicked
-            if (gamepad2.dpad_up) { //when up on dpad is pressed
-                slideInput = true;
-                slideR.setMotorEnable();
-                slideL.setMotorEnable();
-                if(slideLevel <= 0){ //low basket
+        else{
+            if (!gamepad2.guide){
+                guidePressed = false;
+            }
+        }
+        if(bucketMode){
+            if(slideR.getCurrentPosition() < 20 && slideLevel == 0){
+                //turns off motors when at 0 position
+                slideR.setMotorDisable();
+                slideL.setMotorDisable();
+                if(gamepad2.dpad_down && slideLevel == 0){
+                    slideInput = true;
+                    slideTarget = 0;
+                    slideR.setMotorEnable();
+                    slideL.setMotorEnable();
                     slideR.setVelocity(5000);
                     slideL.setVelocity(5000);
-                    slideTarget = 1360;
-                    slideR.setTargetPosition(slideTarget);
-                    slideL.setTargetPosition(slideTarget);
-                    slideLevel = 1;
-                    telemetry.addData("level:","1");
-                    telemetry.update();
-                }
-                else if(slideLevel == 1 && armHinge.getCurrentPosition()> -300){ //high basket
-                    slideTarget = 2750;
-                    slideR.setTargetPosition(slideTarget);
-                    slideL.setTargetPosition(slideTarget);
-                    slideLevel = 2;
-                    telemetry.addData("level:","2");
-                    telemetry.update();
-                }
-            }
-            else if(gamepad2.dpad_down){
-                slideInput = true;
-                if(slideLevel == 2){ //low basket
-                    slideTarget = 1360;
-                    slideR.setTargetPosition(slideTarget);
-                    slideL.setTargetPosition(slideTarget);
-                    slideLevel = 1;
-                    telemetry.addData("level:","1");
-                    telemetry.update();
-                }
-                else if(slideLevel == 1){ //down
-                    slideTarget = 0;
-                    slideR.setTargetPosition(slideTarget);
-                    slideL.setTargetPosition(slideTarget);
-                    slideLevel = 0;
-                    telemetry.addData("level:","0");
-                    telemetry.update();
-                }
-                else if(slideLevel <= 0){
-                    slideTarget = 0;
                     slideR.setTargetPosition(slideTarget);
                     slideL.setTargetPosition(slideTarget);
                     slideLevel = -1;
                     telemetry.addData("level:","0");
+                    telemetry.addData("power:", "OFF");
                     telemetry.update();
                 }
             }
-        }
-        else {
-            if (!gamepad2.dpad_down && !gamepad2.dpad_up && !yPressed){ //when arrow button (dpad up/down) is released
-                slideInput = false;
+            if (!slideInput){ //slide input true is dpad clicked
+                if (gamepad2.dpad_up) { //when up on dpad is pressed
+                    slideMoving = true;
+                    slideInput = true;
+                    slideR.setMotorEnable();
+                    slideL.setMotorEnable();
+                    if(slideLevel <= 0){ //low basket
+                        slideR.setVelocity(5000);
+                        slideL.setVelocity(5000);
+                        slideTarget = 1360;
+                        slideR.setTargetPosition(slideTarget);
+                        slideL.setTargetPosition(slideTarget);
+                        slideLevel = 1;
+                        telemetry.addData("level:","1");
+                        telemetry.update();
+                    }
+                    else if(slideLevel == 1 && armHinge.getCurrentPosition()> -300){ //high basket
+                        slideTarget = 2750;
+                        slideR.setTargetPosition(slideTarget);
+                        slideL.setTargetPosition(slideTarget);
+                        slideLevel = 2;
+                        telemetry.addData("level:","2");
+                        telemetry.update();
+                    }
+                }
+                else if(gamepad2.dpad_down){
+                    slideInput = true;
+                    if(slideLevel == 2){ //low basket
+                        slideTarget = 1360;
+                        slideR.setTargetPosition(slideTarget);
+                        slideL.setTargetPosition(slideTarget);
+                        slideLevel = 1;
+                        telemetry.addData("level:","1");
+                        telemetry.update();
+                    }
+                    else if(slideLevel == 1){ //down
+                        slideTarget = 0;
+                        slideR.setTargetPosition(slideTarget);
+                        slideL.setTargetPosition(slideTarget);
+                        slideLevel = 0;
+                        telemetry.addData("level:","0");
+                        telemetry.update();
+                    }
+                    else if(slideLevel <= 0){
+                        slideTarget = 0;
+                        slideR.setTargetPosition(slideTarget);
+                        slideL.setTargetPosition(slideTarget);
+                        slideLevel = -1;
+                        telemetry.addData("level:","0");
+                        telemetry.update();
+                    }
+                }
+            }
+            else {
+                if (!gamepad2.dpad_down && !gamepad2.dpad_up && !yPressed){ //when arrow button (dpad up/down) is released
+                    slideInput = false;
+                    slideMoving = false;
                 /*telemetry.addData("Right position:", slideR.getCurrentPosition());
                 telemetry.addData("Left position:", slideL.getCurrentPosition());
                 telemetry.addData("velocity", slideR.getVelocity());
                 telemetry.update();*/
+                }
+            }
+        }
+        else{
+            if(slideR.getCurrentPosition() < 20 && slideLevel == 0){
+                //turns off motors when at 0 position
+                slideR.setMotorDisable();
+                slideL.setMotorDisable();
+                if(gamepad2.dpad_down && slideLevel == 0){
+                    slideInput = true;
+                    slideTarget = 0;
+                    slideR.setMotorEnable();
+                    slideL.setMotorEnable();
+                    slideR.setVelocity(5000);
+                    slideL.setVelocity(5000);
+                    slideR.setTargetPosition(slideTarget);
+                    slideL.setTargetPosition(slideTarget);
+                    slideLevel = -1;
+                    telemetry.addData("level:","0");
+                    telemetry.addData("power:", "OFF");
+                    telemetry.update();
+                }
+            }
+            if (!slideInput){ //slide input true is dpad clicked
+                if (gamepad2.dpad_up) { //when up on dpad is pressed
+                    slideMoving = true;
+                    slideInput = true;
+                    slideR.setMotorEnable();
+                    slideL.setMotorEnable();
+                    if(slideLevel <= 0){ //low basket
+                        slideR.setVelocity(5000);
+                        slideL.setVelocity(5000);
+                        slideTarget = 800;
+                        slideR.setTargetPosition(slideTarget);
+                        slideL.setTargetPosition(slideTarget);
+                        slideLevel = 1;
+                        telemetry.addData("level:","1");
+                        telemetry.update();
+                    }
+                    else if(slideLevel == 1 && armHinge.getCurrentPosition()> -300){ //high basket
+                        slideTarget = 1225;
+                        slideR.setTargetPosition(slideTarget);
+                        slideL.setTargetPosition(slideTarget);
+                        slideLevel = 2;
+                        telemetry.addData("level:","2");
+                        telemetry.update();
+                    }
+                }
+                else if(gamepad2.dpad_down){
+                    slideInput = true;
+                    if(slideLevel == 2){ //low basket
+                        slideTarget = 800;
+                        slideR.setTargetPosition(slideTarget);
+                        slideL.setTargetPosition(slideTarget);
+                        slideLevel = 1;
+                        telemetry.addData("level:","1");
+                        telemetry.update();
+                    }
+                    else if(slideLevel == 1){ //down
+                        slideTarget = 0;
+                        slideR.setTargetPosition(slideTarget);
+                        slideL.setTargetPosition(slideTarget);
+                        slideLevel = 0;
+                        telemetry.addData("level:","0");
+                        telemetry.update();
+                    }
+                    else if(slideLevel <= 0){
+                        slideTarget = 0;
+                        slideR.setTargetPosition(slideTarget);
+                        slideL.setTargetPosition(slideTarget);
+                        slideLevel = -1;
+                        telemetry.addData("level:","0");
+                        telemetry.update();
+                    }
+                }
+            }
+            else {
+                if (!gamepad2.dpad_down && !gamepad2.dpad_up && !yPressed){ //when arrow button (dpad up/down) is released
+                    slideInput = false;
+                    slideMoving = false;
+                /*telemetry.addData("Right position:", slideR.getCurrentPosition());
+                telemetry.addData("Left position:", slideL.getCurrentPosition());
+                telemetry.addData("velocity", slideR.getVelocity());
+                telemetry.update();*/
+                }
             }
         }
     }
@@ -359,8 +465,9 @@ public class Main_Field_centric extends LinearOpMode {
     public void arm(){
         armHinge.setTargetPosition(armTarget);
         //armHinge.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        armHinge.setVelocity(900);
         if (armTarget>= -890 && gamepad2.right_stick_y > 0 && slideLevel<2){
+            armHinge.setVelocity(900);
+            armHinge.setMotorEnable();
             // Go down
             armTarget -= (int)(gamepad2.right_stick_y*20);
             if (armTarget<-890){
@@ -373,6 +480,8 @@ public class Main_Field_centric extends LinearOpMode {
             //upDown.setVelocity(500*upness);
         }
         else if (gamepad2.right_stick_y < 0 && armTarget <=0 && slideLevel<2){
+            armHinge.setVelocity(900);
+            armHinge.setMotorEnable();
             // Go up
             armTarget -= (int)(gamepad2.right_stick_y*20);
             if (armTarget>0){
@@ -387,12 +496,14 @@ public class Main_Field_centric extends LinearOpMode {
         else {
             if (armMoving){
                 armTarget = armHinge.getCurrentPosition();
+                armHinge.setMotorDisable();
                 armMoving = false;
                 // STOP
                 //upDown.setVelocity(0);
                 //Do nothing for now - holding position
             }
         }
+
     }
 
     public void tongue(){
@@ -405,33 +516,68 @@ public class Main_Field_centric extends LinearOpMode {
         }
     }
 
-    public void deposit(){
+    public void grabDeposit(){
         if(!yPressed) {
-            if (gamepad2.y) { //grab specimen forward position
+            if (gamepad2.y && depositMode) { //transfer from front claw to back
                 yPressed = true;
                 //motor first
                 telemetry.addData("Sdlie r", slideR.getCurrentPosition());
                 telemetry.addData("tgt", slideR.getTargetPosition());
                 telemetry.update();
-                while(slideR.getCurrentPosition()>210 || slideR.getCurrentPosition()<190){
+                while((slideR.getCurrentPosition()>190 || slideR.getCurrentPosition()<170) && opModeIsActive()){
                     slideR.setVelocity(1000);
                     slideL.setVelocity(1000);
-                    slideR.setTargetPosition(200);
-                    slideL.setTargetPosition(200);
+                    slideR.setTargetPosition(180);
+                    slideL.setTargetPosition(180);
                     slideLevel=0;
                 }
-                while (armHinge.getCurrentPosition() < -90) {
-                    armHinge.setTargetPosition(-90);
+                backClaw.setPosition(0.35);
+                backWrist.setPosition(0.65);
+                while (armHinge.getCurrentPosition() < 0 && opModeIsActive()) {
+                    armHinge.setVelocity(900);
+                    armHinge.setMotorEnable();
+                    armHinge.setTargetPosition(0);
                     tongue.setPower(1);
                     armMoving = true;
                 }
+                armHinge.setMotorDisable();
                 tongue.setPower(0);
-                bucket.setPosition(0);
-                while(wrist.getPosition()!= 0){
+                while(wrist.getPosition()!= 0 && opModeIsActive()){
                     wrist.setPosition(0);
                 }
-                sleep(250);
+                sleep(600);
+                backClaw.setPosition(0);
+                sleep(300);
                 claw.setPosition(0.2);
+                sleep(300);
+                backWrist.setPosition(0);
+                depositMode = false;
+            }
+            else if(gamepad2.y){ //grab mode
+                yPressed = true;
+                /*while(slideR.getCurrentPosition()>1360){
+                    slideR.setVelocity(1000);
+                    slideL.setVelocity(1000);
+                    slideR.setTargetPosition(210);
+                    slideL.setTargetPosition(210);
+                    slideLevel=0;
+                }*/
+                while (armHinge.getCurrentPosition() > -550 && opModeIsActive()) {
+                    armHinge.setVelocity(900);
+                    armHinge.setMotorEnable();
+                    armHinge.setTargetPosition(-550);
+                    if(armHinge.getCurrentPosition() < -450){
+                        tongue.setPower(-1);
+                    }
+                    else{
+                        tongue.setPower(0);
+                    }
+                    armMoving = true;
+                }
+                armHinge.setMotorDisable();
+                wrist.setPosition(0.62);
+                claw.setPosition(0.2);
+                depositMode = true;
             }
         }
         else if (!gamepad2.y){
@@ -441,8 +587,8 @@ public class Main_Field_centric extends LinearOpMode {
     }
 
     public void claw(){//open-close
-        if(armHinge.getCurrentPosition()<-300){
-            wrist.setPosition(0.4);
+        if(armHinge.getCurrentPosition()<-300 && !bPressed){
+            wrist.setPosition(0.62);
         }
         if(!xPressed){
             if(gamepad2.x && claw.getPosition()==0.55){
@@ -461,24 +607,53 @@ public class Main_Field_centric extends LinearOpMode {
         }
     }
 
-    public void door(){//open-close
-        if(!doorPressed){
-            if(gamepad2.a && bucket.getPosition()==0.3){
-                doorPressed = true;
-                bucket.setPosition(0);
-                pattern = RevBlinkinLedDriver.BlinkinPattern.RED;
-                blinkinLedDriver.setPattern(pattern);
+    public void tiltHang(){
+        if(!bPressed){
+            if(gamepad2.b){
+                bPressed = true;
+                wrist.setPosition(0);
+                while (armHinge.getCurrentPosition() > -1400 && opModeIsActive()) {
+                    armHinge.setTargetPosition(-1400);
+                    armMoving = true;
+                }
+                int temp = (int)(getRuntime());
+                while(getRuntime() < temp+1 && opModeIsActive()){
+                    tongue.setPower(-1);
+                }
+                temp = (int)(getRuntime());
+                while(getRuntime()< temp+1 && opModeIsActive()){
+                    leftFrontDrive.setPower(-1);
+                    leftBackDrive.setPower(-1);
+                    rightFrontDrive.setPower(-1);
+                    rightBackDrive.setPower(-1);
+                }
+                leftFrontDrive.setPower(0);
+                leftBackDrive.setPower(0);
+                rightFrontDrive.setPower(0);
+                rightBackDrive.setPower(0);
+            }
+        }
+        else{
+            if (!gamepad2.b){
+                bPressed = false;
+            }
+        }
+    }
+
+    public void backClaw(){
+        if(!aPressed){
+            if(gamepad2.a && backClaw.getPosition()==0){
+                aPressed = true;
+                backClaw.setPosition(0.35);
             }
             else if(gamepad2.a){
-                doorPressed = true;
-                bucket.setPosition(0.3);
-                pattern = RevBlinkinLedDriver.BlinkinPattern.GREEN;
-                blinkinLedDriver.setPattern(pattern);
+                aPressed = true;
+                backClaw.setPosition(0);
             }
         }
         else{
             if (!gamepad2.a){
-                doorPressed = false;
+                aPressed = false;
             }
         }
     }

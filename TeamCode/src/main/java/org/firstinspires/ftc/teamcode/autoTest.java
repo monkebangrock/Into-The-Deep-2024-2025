@@ -140,52 +140,43 @@ public class autoTest extends LinearOpMode {
 
         int visionOutputPosition = 1;
         TrajectoryActionBuilder tab1 = drive.actionBuilder(initialPose)
-                .lineToY(40.5)
-                .setTangent(PI/2)
-                .splineTo(new Vector2d(48.0,40.5), PI) //fix
-
-                /*
-                .lineToY(43.0)
-                .strafeTo(Vector2d(48.0,40.5))  //if spline no work
-                .turn(-PI)
-                */
-
-                .strafeTo(new Vector2d(56.0, 57.5))
-                .turn(3*PI/4)
-                //dump
-
-                .strafeTo(new Vector2d(60.0, 40.5))
-                .turn(PI/4)
-                //pick up
-                .strafeTo(new Vector2d(56.0, 57.5))
-                .turn(-PI/4)
-                //dump
-                .strafeTo(new Vector2d(61.0,55.0))
-                .turn(PI*0.6)
-                //pick up
-                .strafeTo(new Vector2d(56.0, 57.5))
-                .turn(-PI*0.6)
-                //dump
-
-                .strafeTo(new Vector2d(30.0,0.0));
-
-
-                TrajectoryActionBuilder tab2 = drive.actionBuilder(new Pose2d(0.0, -63.0, PI/2))
-                .lineToY(-40.5)
                 .setTangent(-PI/2)
-                .splineTo(new Vector2d(48.0,-40.5), PI)
-                .turn(PI/2)
-                .strafeTo(new Vector2d(56.0, -57.5))
-                .turn(PI/4)
-                .strafeTo(new Vector2d(60.0, -40.5))
-                .turn(-PI/4)
-                .strafeTo(new Vector2d(56.0, -57.5))
-                .turn(PI/4)
-                .strafeTo(new Vector2d(61.0,-55.0))
-                .turn(-PI*0.6)
-                .strafeTo(new Vector2d(56.0, -57.5))
-                .turn(PI*0.6)
-                .strafeTo(new Vector2d(-63.0,-63.0));
+                .lineToY(34) //fwd to bar
+                //hang specimen #1
+                .lineToY(50) //pull out from bar a bit
+                .splineToConstantHeading(new Vector2d(-40,25), -PI/2) //to blue sample
+                .splineToConstantHeading(new Vector2d(-45, 10), -PI/2) //to blue sample
+                .splineToConstantHeading(new Vector2d(-45, 48), -PI/2) //to human player zone
+                .splineToConstantHeading(new Vector2d(-45, 10), -PI/2) //to blue sample #2
+                .splineToConstantHeading(new Vector2d(-55, 12), -PI/2) //to blue sample #2
+                .splineToConstantHeading(new Vector2d(-55, 48), -PI/2) //to human player zone
+                .lineToY(45) //pull out from wall a bit
+                .splineToConstantHeading(new Vector2d(-35, 56), -PI/2) //to wall - to pick up specimen
+                //grab specimen #2
+                .splineToConstantHeading(new Vector2d(0, 34), -PI/2) //to submersible
+                //place specimen #2
+                .lineToY(45) //pull out from submersible a bit
+                .splineToConstantHeading(new Vector2d(-54, 10), -PI/2) //to blue sample #3
+                .splineToConstantHeading(new Vector2d(-61, 12), -PI/2)//to blue sample #3
+                .splineToConstantHeading(new Vector2d(-61, 48), -PI/2) //to human player zone
+                .lineToY(45) // pull out from submersible a bit
+                .splineToConstantHeading(new Vector2d(-35, 56), -PI/2) // to wall - to pick up specimen
+                //grab specimen #3
+                .lineToY(45) // pull out from wall a bit
+                .splineToConstantHeading(new Vector2d(0, 34), -PI/2); //to submersible
+                //place specimen #3
+                /*
+                .lineToY(45) // pull out from submersible a bit
+                .splineToConstantHeading(new Vector2d(-35, 56), -PI/2) // to wall - to pick up specimen
+                //grab specimen #4
+                .splineToConstantHeading(new Vector2d(0, 34), -PI/2) //to submersible
+                //place specimen #4
+                .lineToY(45) // pull out from submersible a bit
+                .splineToConstantHeading(new Vector2d(-35, 56), -PI/2) // to wall - to pick up specimen
+                //grab specimen #5
+                .splineToConstantHeading(new Vector2d(0, 34), -PI/2);//to submersible
+                //place specimen #5*/
+
 
 
         waitForStart();
@@ -208,12 +199,11 @@ public class autoTest extends LinearOpMode {
     }
 }
 
-    /*
-     *  Method to perform a relative move, based on encoder counts.
-     *  Encoders are not reset as the move is based on the current position.
-     *  Move will stop if any of three conditions occur:
-     *  1) Move gets to the desired position
-     *  2) Move runs out of time
-     *  3) Driver stops the OpMode running.
-     */
-
+/*
+ *  Method to perform a relative move, based on encoder counts.
+ *  Encoders are not reset as the move is based on the current position.
+ *  Move will stop if any of three conditions occur:
+ *  1) Move gets to the desired position
+ *  2) Move runs out of time
+ *  3) Driver stops the OpMode running.
+ */
