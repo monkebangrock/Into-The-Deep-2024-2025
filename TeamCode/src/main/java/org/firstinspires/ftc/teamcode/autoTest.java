@@ -178,6 +178,7 @@ public class autoTest extends LinearOpMode {
                 //place specimen #5*/
 
 
+
         waitForStart();
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
