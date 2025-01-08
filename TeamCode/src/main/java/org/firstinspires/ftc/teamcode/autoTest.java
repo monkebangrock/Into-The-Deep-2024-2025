@@ -73,7 +73,7 @@ import com.acmerobotics.roadrunner.ftc.Actions;
  */
 
 @Autonomous(name="Robot: Auto Drive By Encoder", group="Robot")
-@Disabled
+//@Disabled
 public class autoTest extends LinearOpMode {
 
     /* Declare OpMode members. */
@@ -110,12 +110,12 @@ public class autoTest extends LinearOpMode {
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // When run, this OpMode should start both motors driving forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
-        leftFront.setDirection(DcMotor.Direction.FORWARD);
+        leftFront.setDirection(DcMotor.Direction.REVERSE);
         leftBack.setDirection(DcMotor.Direction.REVERSE);
-        rightFront.setDirection(DcMotor.Direction.REVERSE);
+        rightFront.setDirection(DcMotor.Direction.FORWARD);
         rightBack.setDirection(DcMotor.Direction.FORWARD);
 
-        leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        /*leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -129,46 +129,68 @@ public class autoTest extends LinearOpMode {
                 leftFront.getCurrentPosition(),
                 leftBack.getCurrentPosition(),
                 rightFront.getCurrentPosition(),
-                rightBack.getCurrentPosition());
+                rightBack.getCurrentPosition());*/
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
         // Wait for the game to start (driver presses START)
-        waitForStart();
-        Pose2d initialPose = new Pose2d(0, 72, Math.toRadians(270));
-        MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
+
+        Pose2d initialPose = new Pose2d(0, 63, Math.toRadians(270));
+        SparkFunOTOSDrive drive = new SparkFunOTOSDrive(hardwareMap, initialPose);
+
         int visionOutputPosition = 1;
-        Action tab1 = drive.actionBuilder(initialPose)
-                .lineToY(40.5)
-                .splineTo(new Vector2d(48.0,40.5), PI/2)
-                .setTangent(65.433)
-                .lineToXLinearHeading(56,5* PI/4)
-                //dump
-                .setTangent(283.24)
-                .lineToXLinearHeading(4,3* PI/2)
-                //pick up
-                .setTangent(103.24)
-                .lineToXLinearHeading(56, 5* PI/4)
-                //dump
-                .setTangent(333.435)
-                .lineToXLinearHeading(61,333.435)
-                //pick up
-                .setTangent(153.435)
-                .lineToXLinearHeading(56,5* PI/4)
-                //dump
-                .splineToLinearHeading(new Pose2d(24.0,0,0), Math.PI)
-                //.lineToLinearHeading(new Pose2d(56.0,57.5,5*Math.PI/4))
-                //dump
-                //.lineToLinearHeading(new Pose2d(60.0,40.5,3*Math.PI/2))
-                //.lineToLinearHeading(new Pose2d(56.0,57.5,5*Math.PI/4))
-                //dump
-                //.lineToLinearHeading(new Pose2d(61.0,55.0,0.747*Math.PI))
-                //.lineToLinearHeading(new Pose2d(56.0,57.5,5*Math.PI/4))
-                //dump
-                .build();
+        TrajectoryActionBuilder tab1 = drive.actionBuilder(initialPose)
+                .setTangent(-PI/2)
+                .lineToY(34) //fwd to bar
+                //hang specimen #1
+                .lineToY(50) //pull out from bar a bit
+                .splineToConstantHeading(new Vector2d(-40,25), -PI/2) //to blue sample
+                .splineToConstantHeading(new Vector2d(-45, 10), -PI/2) //to blue sample
+                .splineToConstantHeading(new Vector2d(-45, 48), -PI/2) //to human player zone
+                .splineToConstantHeading(new Vector2d(-45, 10), -PI/2) //to blue sample #2
+                .splineToConstantHeading(new Vector2d(-55, 12), -PI/2) //to blue sample #2
+                .splineToConstantHeading(new Vector2d(-55, 48), -PI/2) //to human player zone
+                .lineToY(45) //pull out from wall a bit
+                .splineToConstantHeading(new Vector2d(-35, 56), -PI/2) //to wall - to pick up specimen
+                //grab specimen #2
+                .splineToConstantHeading(new Vector2d(0, 34), -PI/2) //to submersible
+                //place specimen #2
+                .lineToY(45) //pull out from submersible a bit
+                .splineToConstantHeading(new Vector2d(-54, 10), -PI/2) //to blue sample #3
+                .splineToConstantHeading(new Vector2d(-61, 12), -PI/2)//to blue sample #3
+                .splineToConstantHeading(new Vector2d(-61, 48), -PI/2) //to human player zone
+                .lineToY(45) // pull out from submersible a bit
+                .splineToConstantHeading(new Vector2d(-35, 56), -PI/2) // to wall - to pick up specimen
+                //grab specimen #3
+                .lineToY(45) // pull out from wall a bit
+                .splineToConstantHeading(new Vector2d(0, 34), -PI/2); //to submersible
+                //place specimen #3
+                /*
+                .lineToY(45) // pull out from submersible a bit
+                .splineToConstantHeading(new Vector2d(-35, 56), -PI/2) // to wall - to pick up specimen
+                //grab specimen #4
+                .splineToConstantHeading(new Vector2d(0, 34), -PI/2) //to submersible
+                //place specimen #4
+                .lineToY(45) // pull out from submersible a bit
+                .splineToConstantHeading(new Vector2d(-35, 56), -PI/2) // to wall - to pick up specimen
+                //grab specimen #5
+                .splineToConstantHeading(new Vector2d(0, 34), -PI/2);//to submersible
+                //place specimen #5*/
+
+
+        waitForStart();
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
 
+        if(isStopRequested()) return;
+        Action chosenOne = tab1.build();
+
+        Actions.runBlocking(
+                new SequentialAction(
+                        chosenOne
+                        //split up trajectory ltr
+                )
+        );
 
         telemetry.addData("Path", "Complete");
         telemetry.update();
@@ -176,12 +198,11 @@ public class autoTest extends LinearOpMode {
     }
 }
 
-    /*
-     *  Method to perform a relative move, based on encoder counts.
-     *  Encoders are not reset as the move is based on the current position.
-     *  Move will stop if any of three conditions occur:
-     *  1) Move gets to the desired position
-     *  2) Move runs out of time
-     *  3) Driver stops the OpMode running.
-     */
-
+/*
+ *  Method to perform a relative move, based on encoder counts.
+ *  Encoders are not reset as the move is based on the current position.
+ *  Move will stop if any of three conditions occur:
+ *  1) Move gets to the desired position
+ *  2) Move runs out of time
+ *  3) Driver stops the OpMode running.
+ */
