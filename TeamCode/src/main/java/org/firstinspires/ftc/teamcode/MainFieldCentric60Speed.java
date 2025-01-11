@@ -30,16 +30,16 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
@@ -73,7 +73,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 @TeleOp
 //@Disabled
-public class MainFieldCentric2024 extends LinearOpMode {
+public class MainFieldCentric60Speed extends LinearOpMode {
 
     // Declare OpMode members for each of the 4 motors.
     private ElapsedTime runtime = new ElapsedTime();
@@ -84,7 +84,7 @@ public class MainFieldCentric2024 extends LinearOpMode {
     private DcMotorEx slideR = null;
     private DcMotorEx slideL = null;
     private DcMotorEx armHinge = null;
-    private Servo tongue;
+    private CRServo tongue;
     private Servo claw;
     private Servo wrist;
     private Servo backWrist;
@@ -104,7 +104,6 @@ public class MainFieldCentric2024 extends LinearOpMode {
     boolean bucketMode;
     boolean guidePressed;
     double rotWristPos;
-    double tonguePos;
     RevBlinkinLedDriver blinkinLedDriver;
     RevBlinkinLedDriver.BlinkinPattern pattern = RevBlinkinLedDriver.BlinkinPattern.HOT_PINK;
 
@@ -121,7 +120,7 @@ public class MainFieldCentric2024 extends LinearOpMode {
         slideR = hardwareMap.get(DcMotorEx.class, "slideR");
         slideL = hardwareMap.get(DcMotorEx.class, "slideL");
         armHinge = hardwareMap.get(DcMotorEx.class, "armHinge");
-        tongue = hardwareMap.get(Servo.class, "tongue");
+        tongue = hardwareMap.get(CRServo.class, "tongue");
         claw = hardwareMap.get(Servo.class,"claw");
         wrist = hardwareMap.get(Servo.class,"wrist");
         backWrist = hardwareMap.get(Servo.class, "backWrist");
@@ -166,7 +165,6 @@ public class MainFieldCentric2024 extends LinearOpMode {
         bucketMode = false;
         guidePressed = false;
         rotWristPos = 0.64;
-        tonguePos = 0;
 
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
@@ -186,13 +184,11 @@ public class MainFieldCentric2024 extends LinearOpMode {
         armHinge.setDirection(DcMotorSimple.Direction.REVERSE);
         wrist.setDirection(Servo.Direction.REVERSE);
         backWrist.setDirection(Servo.Direction.REVERSE);
-        tongue.setDirection(Servo.Direction.REVERSE);
-        wrist.setPosition(0.48);
+        wrist.setPosition(0);
         claw.setPosition(0);
         backWrist.setPosition(0);
         backClaw.setPosition(0);
         rotWrist.setPosition(0.64);
-        tongue.setPosition(0);
 
         // Retrieve the IMU from the hardware map
         IMU imu = hardwareMap.get(IMU.class, "imu");
@@ -231,11 +227,11 @@ public class MainFieldCentric2024 extends LinearOpMode {
              * k: max power constant
              * n: reduces sensitivity for smaller values of x - greater value of n makes smaller values less powerful
              * */
-            double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
+            double y = -gamepad1.left_stick_y *.6 ; // Remember, Y stick value is reversed
             double yscaled = y != 0 ? Math.signum(y) * Math.pow(Math.abs(y), 2) : 0;
-            double x = gamepad1.left_stick_x;
+            double x = gamepad1.left_stick_x * .6;
             double xscaled = x != 0 ? Math.signum(x) * Math.pow(Math.abs(x), 2) : 0;
-            double rx = gamepad1.right_stick_x;
+            double rx = gamepad1.right_stick_x * .6;
             double rxscaled = rx != 0 ? Math.signum(rx) * Math.pow(Math.abs(rx), 2) : 0;
 
             // This button choice was made so that it is hard to hit on accident,
@@ -479,7 +475,6 @@ public class MainFieldCentric2024 extends LinearOpMode {
         armHinge.setTargetPosition(armTarget);
         //armHinge.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         if (armTarget>= -890 && gamepad2.right_stick_y > 0 && slideLevel<2){
-            armHinge.setMotorEnable();
             armHinge.setVelocity(900);
             // Go down
             armTarget -= (int)(gamepad2.right_stick_y*20);
@@ -493,7 +488,6 @@ public class MainFieldCentric2024 extends LinearOpMode {
             //upDown.setVelocity(500*upness);
         }
         else if (gamepad2.right_stick_y < 0 && armTarget <=0 && slideLevel<2){
-            armHinge.setMotorEnable();
             armHinge.setVelocity(900);
             // Go up
             armTarget -= (int)(gamepad2.right_stick_y*20);
@@ -510,9 +504,6 @@ public class MainFieldCentric2024 extends LinearOpMode {
             if (armMoving){
                 armTarget = armHinge.getCurrentPosition();
                 armMoving = false;
-                if(armHinge.getCurrentPosition() >= -450){
-                    armHinge.setMotorDisable();
-                }
                 // STOP
                 //upDown.setVelocity(0);
                 //Do nothing for now - holding position
@@ -521,13 +512,13 @@ public class MainFieldCentric2024 extends LinearOpMode {
     }
 
     public void tongue(){
-        if (gamepad2.left_bumper && tonguePos > 0) {
-            tonguePos -= 0.01;
-        } else if (gamepad2.right_bumper && tonguePos <0.37) {
-            tonguePos += 0.01;
+        if (gamepad2.left_bumper) {
+            tongue.setPower(1);
+        } else if (gamepad2.right_bumper) {
+            tongue.setPower(-1);
+        } else {
+            tongue.setPower(0);
         }
-        tongue.setPosition(tonguePos);
-
     }
 
     public void grabDeposit(){
@@ -541,28 +532,29 @@ public class MainFieldCentric2024 extends LinearOpMode {
                 while((slideR.getCurrentPosition()>190 || slideR.getCurrentPosition()<170) && opModeIsActive()){
                     slideR.setVelocity(1000);
                     slideL.setVelocity(1000);
-                    slideR.setTargetPosition(140);
-                    slideL.setTargetPosition(140);
+                    slideR.setTargetPosition(180);
+                    slideL.setTargetPosition(180);
                     slideLevel=0;
                 }
                 backClaw.setPosition(0.35);
                 backWrist.setPosition(0.65);
                 rotWrist.setPosition(0.64);
                 rotWristPos = 0.64;
-                tongue.setPosition(0);
-                tonguePos = 0;
                 while (armHinge.getCurrentPosition() < 0 && opModeIsActive()) {
-                    armHinge.setMotorEnable();
                     armHinge.setVelocity(900);
                     armHinge.setTargetPosition(0);
+                    tongue.setPower(1);
                     armMoving = true;
                 }
-                wrist.setPosition(0);
-                sleep(200);
+                tongue.setPower(0);
+                while(wrist.getPosition()!= 0 && opModeIsActive()){
+                    wrist.setPosition(0);
+                }
+                sleep(600);
                 backClaw.setPosition(0);
-                sleep(200);
+                sleep(300);
                 claw.setPosition(0);
-                sleep(200);
+                sleep(300);
                 backWrist.setPosition(0);
                 depositMode = false;
             }
@@ -575,12 +567,15 @@ public class MainFieldCentric2024 extends LinearOpMode {
                     slideL.setTargetPosition(210);
                     slideLevel=0;
                 }*/
-                tongue.setPosition(0.2);
-                tonguePos = 0.2;
                 while (armHinge.getCurrentPosition() > -550 && opModeIsActive()) {
-                    armHinge.setMotorEnable();
                     armHinge.setVelocity(900);
                     armHinge.setTargetPosition(-550);
+                    if(armHinge.getCurrentPosition() < -450){
+                        tongue.setPower(-1);
+                    }
+                    else{
+                        tongue.setPower(0);
+                    }
                     armMoving = true;
                 }
                 wrist.setPosition(0.62);
@@ -595,11 +590,8 @@ public class MainFieldCentric2024 extends LinearOpMode {
     }
 
     public void claw(){//open-close
-        if(armHinge.getCurrentPosition()<-500 && !bPressed){
+        if(armHinge.getCurrentPosition()<-300 && !bPressed){
             wrist.setPosition(0.62);
-        }
-        else if(armHinge.getCurrentPosition()>-500 & !yPressed){
-            wrist.setPosition(0.48);
         }
         if(!xPressed){
             if(gamepad2.x && claw.getPosition()==0.34){
@@ -628,6 +620,9 @@ public class MainFieldCentric2024 extends LinearOpMode {
                     armMoving = true;
                 }
                 int temp = (int)(getRuntime());
+                while(getRuntime() < temp+1 && opModeIsActive()){
+                    tongue.setPower(-1);
+                }
                 temp = (int)(getRuntime());
                 while(getRuntime()< temp+1 && opModeIsActive()){
                     leftFrontDrive.setPower(-1);
@@ -668,13 +663,13 @@ public class MainFieldCentric2024 extends LinearOpMode {
 
 
     public void rotWrist(){
-        if (rotWrist.getPosition() < 1 && gamepad2.right_stick_x < 0){
+        if (rotWrist.getPosition() < 1 && gamepad2.right_stick_x > 0){
             // Go right
             rotWristPos += 0.01;
             rotWrist.setPosition(rotWristPos);
             //upDown.setVelocity(500*upness);
         }
-        else if (gamepad2.right_stick_x > 0 && rotWrist.getPosition() > 0){
+        else if (gamepad2.right_stick_x < 0 && rotWrist.getPosition() > 0){
             // Go left
             rotWristPos -= 0.01;
             rotWrist.setPosition(rotWristPos);
