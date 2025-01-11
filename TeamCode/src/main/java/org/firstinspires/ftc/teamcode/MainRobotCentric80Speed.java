@@ -30,18 +30,17 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 /*
  * This file contains an example of a Linear "OpMode".
@@ -73,7 +72,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 @TeleOp
 //@Disabled
-public class MainFieldCentricPostAuto2024 extends LinearOpMode {
+public class MainRobotCentric80Speed extends LinearOpMode {
 
     // Declare OpMode members for each of the 4 motors.
     private ElapsedTime runtime = new ElapsedTime();
@@ -126,6 +125,7 @@ public class MainFieldCentricPostAuto2024 extends LinearOpMode {
         backWrist = hardwareMap.get(Servo.class, "backWrist");
         backClaw = hardwareMap.get(Servo.class, "backClaw");
         rotWrist = hardwareMap.get(Servo.class, "rotWrist");
+        IMU imu = hardwareMap.get(IMU.class, "imu");
         blinkinLedDriver = hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");
 
         //reset encoder
@@ -133,6 +133,9 @@ public class MainFieldCentricPostAuto2024 extends LinearOpMode {
         leftBackDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         rightFrontDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         rightBackDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        slideR.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        slideL.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        armHinge.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         //brake motors
         leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -148,6 +151,10 @@ public class MainFieldCentricPostAuto2024 extends LinearOpMode {
         slideR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         slideL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         armHinge.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
+                RevHubOrientationOnRobot.LogoFacingDirection.UP,
+                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
+        imu.initialize(parameters);
         slideTarget = 0;
         slideMoving = false;
         slideLevel = 0;
@@ -184,21 +191,11 @@ public class MainFieldCentricPostAuto2024 extends LinearOpMode {
         wrist.setPosition(0);
         claw.setPosition(0);
         backWrist.setPosition(0);
-        backClaw.setPosition(0);
+        backClaw.setPosition(0.35);
         rotWrist.setPosition(0.64);
 
-        // Retrieve the IMU from the hardware map
-        IMU imu = hardwareMap.get(IMU.class, "imu");
-        // Adjust the orientation parameters to match your robot
-        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
-        // Without this, the REV Hub's orientation is assumed to be logo up / USB forward
-        imu.initialize(parameters);
 
-
-
-        // Wait for the game to start (driver presses START)
+                // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
@@ -212,8 +209,6 @@ public class MainFieldCentricPostAuto2024 extends LinearOpMode {
         leftBackDrive.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         rightFrontDrive.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         rightBackDrive.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-        imu.resetYaw();
-
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             /*scaling equation:
@@ -224,42 +219,31 @@ public class MainFieldCentricPostAuto2024 extends LinearOpMode {
              * k: max power constant
              * n: reduces sensitivity for smaller values of x - greater value of n makes smaller values less powerful
              * */
-            double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
+            double y = -(gamepad1.left_stick_y ) * .8; // Remember, Y stick value is reversed
             double yscaled = y != 0 ? Math.signum(y) * Math.pow(Math.abs(y), 2) : 0;
-            double x = gamepad1.left_stick_x;
+            double x = gamepad1.left_stick_x * 1.1 * .8; // Counteract imperfect strafing
             double xscaled = x != 0 ? Math.signum(x) * Math.pow(Math.abs(x), 2) : 0;
-            double rx = gamepad1.right_stick_x;
+            double rx = gamepad1.right_stick_x * .8;
             double rxscaled = rx != 0 ? Math.signum(rx) * Math.pow(Math.abs(rx), 2) : 0;
+            double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
+            double rightBackPower = (yscaled + xscaled - rxscaled) / denominator;
+            double leftBackPower = (yscaled - xscaled + rxscaled) / denominator;
+            double leftFrontPower = (yscaled + xscaled + rxscaled) / denominator;
+            double rightFrontPower = (yscaled - xscaled - rxscaled) / denominator;
 
-            // This button choice was made so that it is hard to hit on accident,
-            // it can be freely changed based on preference.
-            // The equivalent button is start on Xbox-style controllers.
-            if (gamepad1.x) {
-                imu.resetYaw();
-            }
+            //Drivetrain (Gamepad1 left + right joystick)
+            leftFrontDrive.setPower(leftFrontPower);
+            leftBackDrive.setPower(leftBackPower);
+            rightFrontDrive.setPower(rightFrontPower);
+            rightBackDrive.setPower(rightBackPower);
 
-            double botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+            // Show the elapsed game time and wheel power.
 
-            // Rotate the movement direction counter to the bot's rotation
-            double rotX = xscaled * Math.cos(-botHeading) - yscaled * Math.sin(-botHeading);
-            double rotY = xscaled * Math.sin(-botHeading) + yscaled * Math.cos(-botHeading);
-
-            //rotX = rotX * 1.1;  // Counteract imperfect strafing
-
-            // Denominator is the largest motor power (absolute value) or 1
-            // This ensures all the powers maintain the same ratio,
-            // but only if at least one is out of the range [-1, 1]
-            double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
-            double frontLeftPower = (rotY + rotX + rxscaled) / denominator;
-            double backLeftPower = (rotY - rotX + rxscaled) / denominator;
-            double frontRightPower = (rotY - rotX - rxscaled) / denominator;
-            double backRightPower = (rotY + rotX - rxscaled) / denominator;
-
-            leftFrontDrive.setPower(frontLeftPower);
-            leftBackDrive.setPower(backLeftPower);
-            rightFrontDrive.setPower(frontRightPower);
-            rightBackDrive.setPower(backRightPower);
-
+            /*telemetry.addData("Status", "Run Time: " + runtime.toString());
+            telemetry.addData("Angle", imu.getRobotYawPitchRollAngles());
+            telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontPower, rightFrontPower);
+            telemetry.addData("Back  left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
+            telemetry.update();*/
             slide();
             arm();
             tongue();
@@ -617,11 +601,11 @@ public class MainFieldCentricPostAuto2024 extends LinearOpMode {
                     armMoving = true;
                 }
                 int temp = (int)(getRuntime());
-                while(getRuntime() < temp+1 && opModeIsActive()){
+                while((getRuntime() < temp+1) && opModeIsActive()){
                     tongue.setPower(-1);
                 }
                 temp = (int)(getRuntime());
-                while(getRuntime()< temp+1 && opModeIsActive()){
+                while((getRuntime()< temp+1) && opModeIsActive()){
                     leftFrontDrive.setPower(-1);
                     leftBackDrive.setPower(-1);
                     rightFrontDrive.setPower(-1);
@@ -657,7 +641,6 @@ public class MainFieldCentricPostAuto2024 extends LinearOpMode {
             }
         }
     }
-
 
     public void rotWrist(){
         if (rotWrist.getPosition() < 1 && gamepad2.right_stick_x > 0){

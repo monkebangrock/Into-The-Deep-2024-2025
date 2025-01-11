@@ -30,16 +30,16 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
@@ -73,7 +73,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 @TeleOp
 //@Disabled
-public class MainFieldCentricPostAuto2024 extends LinearOpMode {
+public class MainFieldCentric60Speed extends LinearOpMode {
 
     // Declare OpMode members for each of the 4 motors.
     private ElapsedTime runtime = new ElapsedTime();
@@ -133,6 +133,9 @@ public class MainFieldCentricPostAuto2024 extends LinearOpMode {
         leftBackDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         rightFrontDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         rightBackDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        slideR.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        slideL.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        armHinge.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         //brake motors
         leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -224,11 +227,11 @@ public class MainFieldCentricPostAuto2024 extends LinearOpMode {
              * k: max power constant
              * n: reduces sensitivity for smaller values of x - greater value of n makes smaller values less powerful
              * */
-            double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
+            double y = -gamepad1.left_stick_y *.6 ; // Remember, Y stick value is reversed
             double yscaled = y != 0 ? Math.signum(y) * Math.pow(Math.abs(y), 2) : 0;
-            double x = gamepad1.left_stick_x;
+            double x = gamepad1.left_stick_x * .6;
             double xscaled = x != 0 ? Math.signum(x) * Math.pow(Math.abs(x), 2) : 0;
-            double rx = gamepad1.right_stick_x;
+            double rx = gamepad1.right_stick_x * .6;
             double rxscaled = rx != 0 ? Math.signum(rx) * Math.pow(Math.abs(rx), 2) : 0;
 
             // This button choice was made so that it is hard to hit on accident,
