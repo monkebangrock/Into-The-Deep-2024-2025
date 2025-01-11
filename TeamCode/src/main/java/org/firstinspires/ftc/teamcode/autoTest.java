@@ -135,49 +135,44 @@ public class autoTest extends LinearOpMode {
 
         // Wait for the game to start (driver presses START)
 
-        Pose2d initialPose = new Pose2d(0, 63, Math.toRadians(270));
+        Pose2d initialPose = new Pose2d(0, 63, Math.toRadians(90));
         SparkFunOTOSDrive drive = new SparkFunOTOSDrive(hardwareMap, initialPose);
 
         int visionOutputPosition = 1;
         TrajectoryActionBuilder tab1 = drive.actionBuilder(initialPose)
                 .setTangent(-PI/2)
-                .lineToY(34) //fwd to bar
+                .lineToY(36) //fwd to bar
                 //hang specimen #1
                 .lineToY(50) //pull out from bar a bit
-                .splineToConstantHeading(new Vector2d(-40,25), -PI/2) //to blue sample
-                .splineToConstantHeading(new Vector2d(-45, 10), -PI/2) //to blue sample
-                .splineToConstantHeading(new Vector2d(-45, 48), -PI/2) //to human player zone
-                .splineToConstantHeading(new Vector2d(-45, 10), -PI/2) //to blue sample #2
-                .splineToConstantHeading(new Vector2d(-55, 12), -PI/2) //to blue sample #2
-                .splineToConstantHeading(new Vector2d(-55, 48), -PI/2) //to human player zone
+                .splineToConstantHeading(new Vector2d(-35,25), -PI/2) //to blue sample
+                .splineToConstantHeading(new Vector2d(-44, 10), PI/2) //to blue sample
+                .splineToConstantHeading(new Vector2d(-44, 48), -PI/2) //to human player zone
+                .splineToConstantHeading(new Vector2d(-44, 10), -PI/2) //to blue sample #2
+                .splineToConstantHeading(new Vector2d(-54, 12), -PI/2) //to blue sample #2
+                .splineToConstantHeading(new Vector2d(-54, 48), -PI/2) //to human player zone
                 .lineToY(45) //pull out from wall a bit
                 .splineToConstantHeading(new Vector2d(-35, 56), -PI/2) //to wall - to pick up specimen
                 //grab specimen #2
                 .splineToConstantHeading(new Vector2d(0, 34), -PI/2) //to submersible
                 //place specimen #2
                 .lineToY(45) //pull out from submersible a bit
-                .splineToConstantHeading(new Vector2d(-54, 10), -PI/2) //to blue sample #3
-                .splineToConstantHeading(new Vector2d(-61, 12), -PI/2)//to blue sample #3
-                .splineToConstantHeading(new Vector2d(-61, 48), -PI/2) //to human player zone
-                .lineToY(45) // pull out from submersible a bit
-                .splineToConstantHeading(new Vector2d(-35, 56), -PI/2) // to wall - to pick up specimen
+                .splineToConstantHeading(new Vector2d(-58, 12), -PI/2)//to blue sample #3
+                .splineToConstantHeading(new Vector2d(-61, 48), PI/2) //to human player zone
+                .splineToConstantHeading(new Vector2d(-35, 56), PI/4) // to wall - to pick up specimen
                 //grab specimen #3
-                .lineToY(45) // pull out from wall a bit
-                .splineToConstantHeading(new Vector2d(0, 34), -PI/2); //to submersible
+                //.lineToY(45) // pull out from wall a bit
+                .splineToConstantHeading(new Vector2d(0, 34), -PI/2) //to submersible
                 //place specimen #3
-                /*
                 .lineToY(45) // pull out from submersible a bit
-                .splineToConstantHeading(new Vector2d(-35, 56), -PI/2) // to wall - to pick up specimen
+                .splineToConstantHeading(new Vector2d(-35, 56), 0) // to wall - to pick up specimen
                 //grab specimen #4
                 .splineToConstantHeading(new Vector2d(0, 34), -PI/2) //to submersible
                 //place specimen #4
                 .lineToY(45) // pull out from submersible a bit
-                .splineToConstantHeading(new Vector2d(-35, 56), -PI/2) // to wall - to pick up specimen
+                .splineToConstantHeading(new Vector2d(-35, 56), 0) // to wall - to pick up specimen
                 //grab specimen #5
                 .splineToConstantHeading(new Vector2d(0, 34), -PI/2);//to submersible
-                //place specimen #5*/
-
-
+                 //place specimen #5
 
         waitForStart();
         // Step through each leg of the path,
