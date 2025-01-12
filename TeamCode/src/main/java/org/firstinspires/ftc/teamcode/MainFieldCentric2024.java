@@ -108,6 +108,11 @@ public class MainFieldCentric2024 extends LinearOpMode {
     RevBlinkinLedDriver blinkinLedDriver;
     RevBlinkinLedDriver.BlinkinPattern pattern = RevBlinkinLedDriver.BlinkinPattern.HOT_PINK;
 
+    // Some constant values
+    final double BACK_CLAW_OPENED = 0.1;
+    final double BACK_CLAW_CLOSED = 0.32;
+
+
 
     @Override
     public void runOpMode() {
@@ -190,7 +195,7 @@ public class MainFieldCentric2024 extends LinearOpMode {
         wrist.setPosition(0.48);
         claw.setPosition(0);
         backWrist.setPosition(0);
-        backClaw.setPosition(0);
+        backClaw.setPosition(BACK_CLAW_CLOSED);
         rotWrist.setPosition(0.64);
         tongue.setPosition(0);
 
@@ -535,7 +540,14 @@ public class MainFieldCentric2024 extends LinearOpMode {
             if (gamepad2.y && depositMode) { //transfer from front claw to back
                 yPressed = true;
                 //motor first
-                int target = 140;
+                int target = 170;
+                backClaw.setPosition(BACK_CLAW_OPENED);
+                backWrist.setPosition(0.62);
+                rotWrist.setPosition(0.62);
+                rotWristPos = 0.62;
+                wrist.setPosition(0.04);
+                tongue.setPosition(0);
+                tonguePos = 0;
                 while((slideR.getCurrentPosition()>(target+10) || slideR.getCurrentPosition()<(target-10)) && opModeIsActive()){
                     slideR.setVelocity(1000);
                     slideL.setVelocity(1000);
@@ -546,22 +558,14 @@ public class MainFieldCentric2024 extends LinearOpMode {
                     telemetry.addData("SlideR Tgt", slideR.getTargetPosition());
                     telemetry.update();
                 }
-                backClaw.setPosition(0.35);
-                backWrist.setPosition(0.65);
-                rotWrist.setPosition(0.64);
-                rotWristPos = 0.64;
-                tongue.setPosition(0);
-                tonguePos = 0;
                 while (armHinge.getCurrentPosition() < 0 && opModeIsActive()) {
                     armHinge.setMotorEnable();
                     armHinge.setVelocity(900);
                     armHinge.setTargetPosition(0);
                     armMoving = true;
                 }
-                wrist.setPosition(0);
-                sleep(600);
-                backClaw.setPosition(0);
-                sleep(200);
+                backClaw.setPosition(BACK_CLAW_CLOSED);
+                sleep(300);
                 claw.setPosition(0);
                 sleep(200);
                 backWrist.setPosition(0);
@@ -578,10 +582,10 @@ public class MainFieldCentric2024 extends LinearOpMode {
                 }*/
                 tongue.setPosition(0.2);
                 tonguePos = 0.2;
-                while (armHinge.getCurrentPosition() > -540 && opModeIsActive()) {
+                while (armHinge.getCurrentPosition() > -550 && opModeIsActive()) {
                     armHinge.setMotorEnable();
                     armHinge.setVelocity(900);
-                    armHinge.setTargetPosition(-540);
+                    armHinge.setTargetPosition(-550);
                     armMoving = true;
                 }
                 wrist.setPosition(0.7);
@@ -596,10 +600,10 @@ public class MainFieldCentric2024 extends LinearOpMode {
     }
 
     public void claw(){//open-close
-        if(armHinge.getCurrentPosition()<-400 && !bPressed){
+        if(armHinge.getCurrentPosition()<-500 && !bPressed){
             wrist.setPosition(0.7);
         }
-        else if(armHinge.getCurrentPosition()>-400 & !yPressed){
+        else if(armHinge.getCurrentPosition()>-500 & !yPressed){
             wrist.setPosition(0.48);
         }
         if(!xPressed){
@@ -651,13 +655,13 @@ public class MainFieldCentric2024 extends LinearOpMode {
 
     public void backClaw(){
         if(!aPressed){
-            if(gamepad2.a && backClaw.getPosition()==0){
+            if(gamepad2.a && backClaw.getPosition()>=(BACK_CLAW_CLOSED-0.1)){
                 aPressed = true;
-                backClaw.setPosition(0.35);
+                backClaw.setPosition(BACK_CLAW_OPENED);
             }
             else if(gamepad2.a){
                 aPressed = true;
-                backClaw.setPosition(0);
+                backClaw.setPosition(BACK_CLAW_CLOSED);
             }
         }
         else{
