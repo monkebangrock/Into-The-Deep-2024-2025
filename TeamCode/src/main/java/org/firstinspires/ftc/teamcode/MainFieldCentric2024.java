@@ -498,7 +498,7 @@ public class MainFieldCentric2024 extends LinearOpMode {
             armHinge.setMotorEnable();
             armHinge.setVelocity(900);
             // Go down
-            armTarget -= (int)(gamepad2.right_stick_y*10);
+            armTarget -= (int)(gamepad2.right_stick_y*5);
             if (armTarget<-890){
                 armTarget = -890;
             }
@@ -512,7 +512,7 @@ public class MainFieldCentric2024 extends LinearOpMode {
             armHinge.setMotorEnable();
             armHinge.setVelocity(900);
             // Go up
-            armTarget -= (int)(gamepad2.right_stick_y*10);
+            armTarget -= (int)(gamepad2.right_stick_y*20);
             if (armTarget>0){
                 armTarget = 0;
             }
@@ -622,7 +622,7 @@ public class MainFieldCentric2024 extends LinearOpMode {
         if(armHinge.getCurrentPosition()<-500 && !bPressed){
             wrist.setPosition(0.7);
         }
-        else if(armHinge.getCurrentPosition()>-500 & !yPressed){
+        else if(armHinge.getCurrentPosition()>-500 & !yPressed && !bPressed){
             wrist.setPosition(0.48);
         }
         if(!xPressed){
@@ -647,12 +647,13 @@ public class MainFieldCentric2024 extends LinearOpMode {
             if(gamepad2.b){
                 bPressed = true;
                 wrist.setPosition(0);
-                while (armHinge.getCurrentPosition() > -1400 && opModeIsActive()) {
-                    armHinge.setTargetPosition(-1400);
+                sleep(500);
+                while (armHinge.getCurrentPosition() > -1300 && opModeIsActive()) {
+                    armHinge.setTargetPosition(-1300);
                     armMoving = true;
                 }
+                /*
                 int temp = (int)(getRuntime());
-                temp = (int)(getRuntime());
                 while(getRuntime()< temp+1 && opModeIsActive()){
                     leftFrontDrive.setPower(-1);
                     leftBackDrive.setPower(-1);
@@ -663,6 +664,8 @@ public class MainFieldCentric2024 extends LinearOpMode {
                 leftBackDrive.setPower(0);
                 rightFrontDrive.setPower(0);
                 rightBackDrive.setPower(0);
+
+                 */
             }
         }
         else{
