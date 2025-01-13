@@ -109,8 +109,16 @@ public class MainFieldCentric2024 extends LinearOpMode {
     RevBlinkinLedDriver.BlinkinPattern pattern = RevBlinkinLedDriver.BlinkinPattern.HOT_PINK;
 
     // Some constant values
+    final double FRONT_CLAW_OPENED = 0.1;
+    final double FRONT_CLAW_CLOSED = 0.32;
     final double BACK_CLAW_OPENED = 0.1;
     final double BACK_CLAW_CLOSED = 0.32;
+    final int ARM_POS_UP = -210;
+    final int ARM_POS_DOWN = -810;
+    final int SLIDES_SPECIMEN_DOWN = 0;
+    final int SLIDES_SPECIMEN_PREP_HANG = 1000;
+    final int SLIDES_SPECIMEN_HANG = 1600;
+
 
 
 
@@ -193,7 +201,7 @@ public class MainFieldCentric2024 extends LinearOpMode {
         backWrist.setDirection(Servo.Direction.REVERSE);
         tongue.setDirection(Servo.Direction.REVERSE);
         wrist.setPosition(0.48);
-        claw.setPosition(0);
+        claw.setPosition(FRONT_CLAW_OPENED);
         backWrist.setPosition(0);
         backClaw.setPosition(BACK_CLAW_CLOSED);
         rotWrist.setPosition(0.64);
@@ -395,13 +403,14 @@ public class MainFieldCentric2024 extends LinearOpMode {
             }
         }
         else{
+            // Specimen mode
             if(slideR.getCurrentPosition() < 20 && slideLevel == 0){
                 //turns off motors when at 0 position
                 slideR.setMotorDisable();
                 slideL.setMotorDisable();
                 if(gamepad2.dpad_down && slideLevel == 0){
                     slideInput = true;
-                    slideTarget = 0;
+                    slideTarget = SLIDES_SPECIMEN_DOWN;
                     slideR.setMotorEnable();
                     slideL.setMotorEnable();
                     slideR.setVelocity(5000);
@@ -423,7 +432,7 @@ public class MainFieldCentric2024 extends LinearOpMode {
                     if(slideLevel <= 0){ //low basket
                         slideR.setVelocity(5000);
                         slideL.setVelocity(5000);
-                        slideTarget = 850;
+                        slideTarget = SLIDES_SPECIMEN_PREP_HANG; //1050;//850;
                         slideR.setTargetPosition(slideTarget);
                         slideL.setTargetPosition(slideTarget);
                         slideLevel = 1;
@@ -431,18 +440,20 @@ public class MainFieldCentric2024 extends LinearOpMode {
                         telemetry.update();
                     }
                     else if(slideLevel == 1 && armHinge.getCurrentPosition()> -300){ //high basket
-                        slideTarget = 1350;
+                        slideTarget = SLIDES_SPECIMEN_HANG; //1500; //1350;
                         slideR.setTargetPosition(slideTarget);
                         slideL.setTargetPosition(slideTarget);
                         slideLevel = 2;
                         telemetry.addData("level:","2");
                         telemetry.update();
+                        sleep(500);
+                        backClaw.setPosition(BACK_CLAW_OPENED);
                     }
                 }
                 else if(gamepad2.dpad_down){
                     slideInput = true;
                     if(slideLevel == 2){ //low basket
-                        slideTarget = 850;
+                        slideTarget = SLIDES_SPECIMEN_PREP_HANG; //1050; //850;
                         slideR.setTargetPosition(slideTarget);
                         slideL.setTargetPosition(slideTarget);
                         slideLevel = 1;
@@ -450,7 +461,7 @@ public class MainFieldCentric2024 extends LinearOpMode {
                         telemetry.update();
                     }
                     else if(slideLevel == 1){ //down
-                        slideTarget = 0;
+                        slideTarget = SLIDES_SPECIMEN_DOWN;
                         slideR.setTargetPosition(slideTarget);
                         slideL.setTargetPosition(slideTarget);
                         slideLevel = 0;
@@ -458,7 +469,7 @@ public class MainFieldCentric2024 extends LinearOpMode {
                         telemetry.update();
                     }
                     else if(slideLevel <= 0){
-                        slideTarget = 0;
+                        slideTarget = SLIDES_SPECIMEN_DOWN;
                         slideR.setTargetPosition(slideTarget);
                         slideL.setTargetPosition(slideTarget);
                         slideLevel = -1;
@@ -558,38 +569,46 @@ public class MainFieldCentric2024 extends LinearOpMode {
                     telemetry.addData("SlideR Tgt", slideR.getTargetPosition());
                     telemetry.update();
                 }
-                while (armHinge.getCurrentPosition() < 0 && opModeIsActive()) {
+                armTarget = ARM_POS_UP;
+                int curPos = armHinge.getCurrentPosition();
+                while ((curPos<(ARM_POS_UP-5) || curPos>(ARM_POS_UP+5))&& opModeIsActive()) {
                     armHinge.setMotorEnable();
-                    armHinge.setVelocity(900);
-                    armHinge.setTargetPosition(0);
+                    armHinge.setVelocity(1500);
+                    armHinge.setTargetPosition(ARM_POS_UP);
                     armMoving = true;
+                    curPos = armHinge.getCurrentPosition();
                 }
                 backClaw.setPosition(BACK_CLAW_CLOSED);
                 sleep(300);
-                claw.setPosition(0);
+                claw.setPosition(FRONT_CLAW_OPENED);
                 sleep(200);
                 backWrist.setPosition(0);
                 depositMode = false;
+
+                // get slide in prep position
+                slideR.setVelocity(5000);
+                slideL.setVelocity(5000);
+                slideTarget = SLIDES_SPECIMEN_PREP_HANG;
+                slideR.setTargetPosition(slideTarget);
+                slideL.setTargetPosition(slideTarget);
+                slideLevel = 1;
+
             }
             else if(gamepad2.y){ //grab mode
                 yPressed = true;
-                /*while(slideR.getCurrentPosition()>1360){
-                    slideR.setVelocity(1000);
-                    slideL.setVelocity(1000);
-                    slideR.setTargetPosition(210);
-                    slideL.setTargetPosition(210);
-                    slideLevel=0;
-                }*/
                 tongue.setPosition(0.2);
                 tonguePos = 0.2;
-                while (armHinge.getCurrentPosition() > -550 && opModeIsActive()) {
-                    armHinge.setMotorEnable();
-                    armHinge.setVelocity(900);
-                    armHinge.setTargetPosition(-550);
-                    armMoving = true;
-                }
                 wrist.setPosition(0.7);
-                claw.setPosition(0);
+                claw.setPosition(FRONT_CLAW_OPENED);
+                armTarget = ARM_POS_DOWN;
+                int curPos = armHinge.getCurrentPosition();
+                while (curPos!=ARM_POS_DOWN && opModeIsActive()) {
+                    armHinge.setMotorEnable();
+                    armHinge.setVelocity(800);
+                    armHinge.setTargetPosition(ARM_POS_DOWN);
+                    armMoving = true;
+                    curPos = armHinge.getCurrentPosition();
+                }
                 depositMode = true;
             }
         }
@@ -607,13 +626,13 @@ public class MainFieldCentric2024 extends LinearOpMode {
             wrist.setPosition(0.48);
         }
         if(!xPressed){
-            if(gamepad2.x && claw.getPosition()==0.34){
+            if(gamepad2.x && claw.getPosition()>=(FRONT_CLAW_CLOSED-0.1)){
                 xPressed = true;
-                claw.setPosition(0);
+                claw.setPosition(FRONT_CLAW_OPENED);
             }
             else if(gamepad2.x){
                 xPressed = true;
-                claw.setPosition(0.34);
+                claw.setPosition(FRONT_CLAW_CLOSED);
             }
         }
         else{
