@@ -115,7 +115,9 @@ public class MainFieldCentric60Speed extends LinearOpMode {
     final double BACK_CLAW_CLOSED = 0.32;
     final int ARM_POS_UP = -225;
     final int ARM_POS_DOWN = -750;
+    final int ARM_POS_TILT = -1300;
     final int SLIDES_SPECIMEN_DOWN = 0;
+    final int SLIDES_SPECIMEN_TRANSFER = 190;
     final int SLIDES_SPECIMEN_PREP_HANG = 1000;
     final int SLIDES_SPECIMEN_HANG = 1600;
     final int SLIDES_ROBOT_HANG = 1500;
@@ -277,10 +279,10 @@ public class MainFieldCentric60Speed extends LinearOpMode {
             double frontRightPower = (rotY - rotX - rxscaled) / denominator;
             double backRightPower = (rotY + rotX - rxscaled) / denominator;
 
-            leftFrontDrive.setPower(0.6 * frontLeftPower);
-            leftBackDrive.setPower(0.6 * backLeftPower);
-            rightFrontDrive.setPower(0.6 * frontRightPower);
-            rightBackDrive.setPower(0.6 * backRightPower);
+            leftFrontDrive.setPower(0.6*frontLeftPower);
+            leftBackDrive.setPower(0.6*backLeftPower);
+            rightFrontDrive.setPower(0.6*frontRightPower);
+            rightBackDrive.setPower(0.6*backRightPower);
 
             slide();
             arm();
@@ -325,6 +327,7 @@ public class MainFieldCentric60Speed extends LinearOpMode {
                 //turns off motors when at 0 position
                 slideR.setMotorDisable();
                 slideL.setMotorDisable();
+                /*  comment out the hang slides -- now using B-Button (i.e. bPressed)
                 if(gamepad2.dpad_down && slideLevel == 0){
                     slideInput = true;
                     slideTarget = 0;
@@ -339,6 +342,7 @@ public class MainFieldCentric60Speed extends LinearOpMode {
                     telemetry.addData("power:", "OFF");
                     telemetry.update();
                 }
+                */
             }
             if (!slideInput){ //slide input true is dpad clicked
                 if (gamepad2.dpad_up) { //when up on dpad is pressed
@@ -524,6 +528,8 @@ public class MainFieldCentric60Speed extends LinearOpMode {
             telemetry.addData("arm pos", armHinge.getCurrentPosition());
             telemetry.addData("tgt pos", armHinge.getTargetPosition());
             telemetry.update();
+        } else if (gamepad2.right_stick_y==0 && armHinge.getCurrentPosition() > -500) {
+            armHinge.setMotorDisable();
         }
     }
 
@@ -542,7 +548,7 @@ public class MainFieldCentric60Speed extends LinearOpMode {
             if (gamepad2.y && depositMode) { //transfer from front claw to back
                 yPressed = true;
                 //motor first
-                int target = 170;
+                int target = SLIDES_SPECIMEN_TRANSFER;
                 backClaw.setPosition(BACK_CLAW_OPENED);
                 backWrist.setPosition(0.62);
                 rotWrist.setPosition(FRONT_WRIST_HORIZONTAL);
@@ -610,10 +616,10 @@ public class MainFieldCentric60Speed extends LinearOpMode {
     }
 
     public void claw(){//open-close
-        if(armHinge.getCurrentPosition()<-500 && !bPressed){
+        if(armHinge.getCurrentPosition()<-500){
             wrist.setPosition(0.7);
         }
-        else if(armHinge.getCurrentPosition()>-500 && !yPressed && !bPressed){
+        else if(armHinge.getCurrentPosition()>-500 && !yPressed){
             wrist.setPosition(0.48);
         }
         if(!xPressed){
@@ -638,28 +644,35 @@ public class MainFieldCentric60Speed extends LinearOpMode {
             if(gamepad2.b){
                 bPressed = true;
 
+                // arm down first
+                armHinge.setMotorEnable();
+                armHinge.setVelocity(900);
+                armHinge.setTargetPosition(ARM_POS_DOWN);
+
                 // Start hang: robot needs to be backed up against submersible.
                 // Roll forward few inches to avoid crashing claw into bar
                 leftFrontDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
                 leftBackDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
                 rightFrontDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
                 rightBackDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+                leftFrontDrive.setTargetPosition(50);
+                leftBackDrive.setTargetPosition(50);
+                rightFrontDrive.setTargetPosition(50);
+                rightBackDrive.setTargetPosition(50);
                 leftFrontDrive.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
                 leftBackDrive.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
                 rightFrontDrive.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
                 rightBackDrive.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
-                leftFrontDrive.setTargetPosition(100);
-                leftBackDrive.setTargetPosition(100);
-                rightFrontDrive.setTargetPosition(100);
-                rightBackDrive.setTargetPosition(100);
-                leftFrontDrive.setVelocity(300);
-                leftBackDrive.setVelocity(300);
-                rightFrontDrive.setVelocity(300);
-                rightBackDrive.setVelocity(300);
+                leftFrontDrive.setVelocity(200);
+                leftBackDrive.setVelocity(200);
+                rightFrontDrive.setVelocity(200);
+                rightBackDrive.setVelocity(200);
 
                 // Set the arm and wrist in position to push down
                 tongue.setPosition(0.2);
                 wrist.setPosition(0);
+
+                sleep(1000);
 
                 // Put slides up
                 slideTarget = SLIDES_ROBOT_HANG;
@@ -669,11 +682,11 @@ public class MainFieldCentric60Speed extends LinearOpMode {
                 slideL.setVelocity(5000);
                 slideLevel = 2;
 
-                sleep(500);
+                sleep(1500);
 
                 // Tilt the robot -- push arm down
-                while (armHinge.getCurrentPosition() > -1250 && opModeIsActive()) {
-                    armHinge.setTargetPosition(-1300);
+                while (armHinge.getCurrentPosition() > (ARM_POS_TILT+50) && opModeIsActive()) {
+                    armHinge.setTargetPosition(ARM_POS_TILT);
                     armMoving = true;
                 }
 
@@ -691,6 +704,9 @@ public class MainFieldCentric60Speed extends LinearOpMode {
                 leftBackDrive.setMotorDisable();
                 rightFrontDrive.setMotorDisable();
                 rightBackDrive.setMotorDisable();
+
+                sleep(5000);
+                armHinge.setMotorDisable();
 
                 // Wait for end of match
                 sleep(30000);
