@@ -30,6 +30,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
+import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -107,6 +108,7 @@ public class MainFieldCentric60Speed extends LinearOpMode {
     double tonguePos;
     RevBlinkinLedDriver blinkinLedDriver;
     RevBlinkinLedDriver.BlinkinPattern pattern = RevBlinkinLedDriver.BlinkinPattern.HOT_PINK;
+    SparkFunOTOS otos;
 
     // Some constant values
     final double FRONT_CLAW_OPENED = 0.1;
@@ -145,6 +147,7 @@ public class MainFieldCentric60Speed extends LinearOpMode {
         backClaw = hardwareMap.get(Servo.class, "backClaw");
         rotWrist = hardwareMap.get(Servo.class, "rotWrist");
         blinkinLedDriver = hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");
+        otos = hardwareMap.get(SparkFunOTOS.class, "otos");
 
         //reset encoder
         leftFrontDrive.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
@@ -210,6 +213,10 @@ public class MainFieldCentric60Speed extends LinearOpMode {
         backClaw.setPosition(BACK_CLAW_CLOSED);
         rotWrist.setPosition(rotWristPos);
         tongue.setPosition(0);
+        otos.calibrateImu();
+        otos.resetTracking();
+        SparkFunOTOS.Pose2D currentPosition = new SparkFunOTOS.Pose2D(0, 0, 0);
+        otos.setPosition(currentPosition);
 
         // Retrieve the IMU from the hardware map
         IMU imu = hardwareMap.get(IMU.class, "imu");
@@ -259,10 +266,13 @@ public class MainFieldCentric60Speed extends LinearOpMode {
             // it can be freely changed based on preference.
             // The equivalent button is start on Xbox-style controllers.
             if (gamepad1.x) {
-                imu.resetYaw();
+                otos.calibrateImu();
+                otos.resetTracking();
+                otos.setPosition(currentPosition);
             }
 
-            double botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+            double botHeading = Math.toRadians(otos.getPosition().h);
+                    //imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
 
             // Rotate the movement direction counter to the bot's rotation
             double rotX = xscaled * Math.cos(-botHeading) - yscaled * Math.sin(-botHeading);
@@ -300,6 +310,8 @@ public class MainFieldCentric60Speed extends LinearOpMode {
             else{
                 telemetry.addData("Mode: ", "Specimen");
             }
+            telemetry.addData("otos heading:", Math.toRadians(otos.getPosition().h));
+            telemetry.addData("imu output: ",imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
             telemetry.addData("arm pos", armHinge.getCurrentPosition());
             telemetry.addData("tgt pos", armHinge.getTargetPosition());
             telemetry.update();
