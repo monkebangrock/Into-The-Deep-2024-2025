@@ -106,6 +106,7 @@ public class MainFieldCentric60Speed extends LinearOpMode {
     boolean guidePressed;
     double rotWristPos;
     double tonguePos;
+    boolean grabbing;
     RevBlinkinLedDriver blinkinLedDriver;
     RevBlinkinLedDriver.BlinkinPattern pattern = RevBlinkinLedDriver.BlinkinPattern.HOT_PINK;
     SparkFunOTOS otos;
@@ -185,6 +186,7 @@ public class MainFieldCentric60Speed extends LinearOpMode {
         bPressed = false;
         bucketMode = false;
         guidePressed = false;
+        grabbing = false;
         rotWristPos = FRONT_WRIST_HORIZONTAL;
         tonguePos = 0;
 
@@ -294,15 +296,18 @@ public class MainFieldCentric60Speed extends LinearOpMode {
             rightFrontDrive.setPower(0.6*frontRightPower);
             rightBackDrive.setPower(0.6*backRightPower);
 
-            slide();
-            arm();
-            tongue();
-            grabDeposit();
-            claw();
-            lights();
-            tiltHang();
-            backClaw();
-            rotWrist();
+            if(!grabbing){
+                slide();
+                arm();
+                tongue();
+                grabDeposit();
+                claw();
+                lights();
+                tiltHang();
+                backClaw();
+                rotWrist();
+            }
+
             telemetry.addData("slide height", slideR.getCurrentPosition());
             if(bucketMode){
                 telemetry.addData("Mode: ", "Bucket/Hang");
@@ -410,7 +415,7 @@ public class MainFieldCentric60Speed extends LinearOpMode {
                 }
             }
             else {
-                if (!gamepad2.dpad_down && !gamepad2.dpad_up && !yPressed){ //when arrow button (dpad up/down) is released
+                if (!gamepad2.dpad_down && !gamepad2.dpad_up){ //when arrow button (dpad up/down) is released
                     slideInput = false;
                     slideMoving = false;
                 /*telemetry.addData("Right position:", slideR.getCurrentPosition());
@@ -497,7 +502,7 @@ public class MainFieldCentric60Speed extends LinearOpMode {
                 }
             }
             else {
-                if (!gamepad2.dpad_down && !gamepad2.dpad_up && !yPressed){ //when arrow button (dpad up/down) is released
+                if (!gamepad2.dpad_down && !gamepad2.dpad_up){ //when arrow button (dpad up/down) is released
                     slideInput = false;
                     slideMoving = false;
                 /*telemetry.addData("Right position:", slideR.getCurrentPosition());
@@ -556,8 +561,23 @@ public class MainFieldCentric60Speed extends LinearOpMode {
     }
 
     public void grabDeposit(){
-        if(!yPressed) {
-            if (gamepad2.y && depositMode) { //transfer from front claw to back
+        if(!yPressed &&!grabbing) {
+
+            if (gamepad2.y &&depositMode){
+                yPressed = true;
+                grabbing = true;
+                YButtonUp yButtonUp = new YButtonUp();
+                yButtonUp.start();
+            }
+            else if(gamepad2.y){
+                yPressed = true;
+                grabbing = true;
+                wrist.setPosition(0.7);
+                YButtonDown yButtonDown = new YButtonDown();
+                yButtonDown.start();
+            }
+
+            /*if (gamepad2.y && depositMode) { //transfer from front claw to back
                 yPressed = true;
                 //motor first
                 int target = SLIDES_SPECIMEN_TRANSFER;
@@ -619,11 +639,10 @@ public class MainFieldCentric60Speed extends LinearOpMode {
                     curPos = armHinge.getCurrentPosition();
                 }
                 depositMode = true;
-            }
+            }*/
         }
         else if (!gamepad2.y){
             yPressed = false;
-            armMoving = false;
         }
     }
 
@@ -631,7 +650,7 @@ public class MainFieldCentric60Speed extends LinearOpMode {
         if(armHinge.getCurrentPosition()<-500){
             wrist.setPosition(0.7);
         }
-        else if(armHinge.getCurrentPosition()>-500 && !yPressed){
+        else if(armHinge.getCurrentPosition()>-500){
             wrist.setPosition(0.48);
         }
         if(!xPressed){
@@ -775,5 +794,82 @@ public class MainFieldCentric60Speed extends LinearOpMode {
             blinkinLedDriver.setPattern(pattern);
         }
 
+    }
+
+    public class YButtonUp extends Thread{
+        @Override
+        public void run() {
+            try {
+                //motor first
+                int target = SLIDES_SPECIMEN_TRANSFER;
+                backClaw.setPosition(BACK_CLAW_OPENED);
+                backWrist.setPosition(0.62);
+                rotWrist.setPosition(FRONT_WRIST_HORIZONTAL);
+                rotWristPos = FRONT_WRIST_HORIZONTAL;
+                wrist.setPosition(0.04);
+                tongue.setPosition(0);
+                tonguePos = 0;
+                while ((slideR.getCurrentPosition() > (target + 10) || slideR.getCurrentPosition() < (target - 10)) && opModeIsActive()) {
+                    slideR.setVelocity(1000);
+                    slideL.setVelocity(1000);
+                    slideR.setTargetPosition(target);
+                    slideL.setTargetPosition(target);
+                    slideLevel = 0;
+                    telemetry.addData("SlideR Pos", slideR.getCurrentPosition());
+                    telemetry.addData("SlideR Tgt", slideR.getTargetPosition());
+                    telemetry.update();
+                }
+                armTarget = ARM_POS_UP;
+                int curPos = armHinge.getCurrentPosition();
+                while ((curPos < (ARM_POS_UP - 5) || curPos > (ARM_POS_UP + 5)) && opModeIsActive()) {
+                    armHinge.setMotorEnable();
+                    armHinge.setVelocity(1500);
+                    armHinge.setTargetPosition(ARM_POS_UP);
+                    armMoving = true;
+                    curPos = armHinge.getCurrentPosition();
+                }
+                backClaw.setPosition(BACK_CLAW_CLOSED);
+                sleep(300);
+                claw.setPosition(FRONT_CLAW_OPENED);
+                sleep(200);
+                backWrist.setPosition(0);
+                depositMode = false;
+                // get slide in prep position
+                slideR.setVelocity(5000);
+                slideL.setVelocity(5000);
+                slideTarget = SLIDES_SPECIMEN_PREP_HANG;
+                slideR.setTargetPosition(slideTarget);
+                slideL.setTargetPosition(slideTarget);
+                slideLevel = 1;
+                grabbing = false;
+            } catch (Exception ex) {
+
+            }
+        }
+    }
+
+    public class YButtonDown extends Thread{
+        @Override
+        public void run() {
+            try {
+                tongue.setPosition(0.2);
+                tonguePos = 0.2;
+                claw.setPosition(FRONT_CLAW_OPENED);
+                wrist.setPosition(0.7);
+                armTarget = ARM_POS_DOWN;
+                int curPos = armHinge.getCurrentPosition();
+                while (curPos != ARM_POS_DOWN && opModeIsActive()) {
+                    armHinge.setMotorEnable();
+                    armHinge.setVelocity(800);
+                    armHinge.setTargetPosition(ARM_POS_DOWN);
+                    armMoving = true;
+                    curPos = armHinge.getCurrentPosition();
+                }
+                depositMode = true;
+                grabbing = false;
+            } catch (Exception ex) {
+
+            }
+        }
     }
 }
