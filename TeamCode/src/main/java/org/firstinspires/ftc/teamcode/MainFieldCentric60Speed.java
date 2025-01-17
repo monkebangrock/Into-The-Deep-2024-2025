@@ -91,6 +91,8 @@ public class MainFieldCentric60Speed extends LinearOpMode {
     private Servo backWrist;
     private Servo backClaw;
     private Servo rotWrist;
+    private Servo stopper1;
+    private Servo stopper2;
     int slideTarget;
     boolean slideMoving;
     int slideLevel;
@@ -125,6 +127,7 @@ public class MainFieldCentric60Speed extends LinearOpMode {
     final int SLIDES_SPECIMEN_HANG = 1600;
     final int SLIDES_ROBOT_HANG = 1500;
     final double FRONT_WRIST_HORIZONTAL = 0.61;
+    final double STOPPER_DOWN = 0.6;
 
 
 
@@ -147,6 +150,8 @@ public class MainFieldCentric60Speed extends LinearOpMode {
         backWrist = hardwareMap.get(Servo.class, "backWrist");
         backClaw = hardwareMap.get(Servo.class, "backClaw");
         rotWrist = hardwareMap.get(Servo.class, "rotWrist");
+        stopper1 = hardwareMap.get(Servo.class, "stopper1");
+        stopper2 = hardwareMap.get(Servo.class, "stopper2");
         blinkinLedDriver = hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");
         otos = hardwareMap.get(SparkFunOTOS.class, "otos");
 
@@ -214,6 +219,8 @@ public class MainFieldCentric60Speed extends LinearOpMode {
         backWrist.setPosition(0);
         backClaw.setPosition(BACK_CLAW_CLOSED);
         rotWrist.setPosition(rotWristPos);
+        stopper1.setPosition(STOPPER_DOWN);
+        stopper2.setPosition(STOPPER_DOWN);
         tongue.setPosition(0);
         otos.calibrateImu();
         otos.resetTracking();
@@ -237,9 +244,6 @@ public class MainFieldCentric60Speed extends LinearOpMode {
 
         waitForStart();
         runtime.reset();
-
-        pattern = RevBlinkinLedDriver.BlinkinPattern.RED;
-        blinkinLedDriver.setPattern(pattern);
 
         leftFrontDrive.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         leftBackDrive.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
@@ -673,6 +677,8 @@ public class MainFieldCentric60Speed extends LinearOpMode {
     public void tiltHang(){
         if(!bPressed){
             if(gamepad2.b){
+                stopper1.setPosition(0);
+                stopper2.setPosition(0);
                 bPressed = true;
 
                 // arm down first
@@ -789,8 +795,16 @@ public class MainFieldCentric60Speed extends LinearOpMode {
             pattern = RevBlinkinLedDriver.BlinkinPattern.CP1_STROBE;
             blinkinLedDriver.setPattern(pattern);
         }
-        if(runtime.seconds()<=105 && runtime.seconds()>=104){
+        else if(runtime.seconds()<=105 && runtime.seconds()>=104){
             pattern = RevBlinkinLedDriver.BlinkinPattern.SHOT_WHITE;
+            blinkinLedDriver.setPattern(pattern);
+        }
+        else if(bucketMode){
+            pattern = RevBlinkinLedDriver.BlinkinPattern.HOT_PINK;
+            blinkinLedDriver.setPattern(pattern);
+        }
+        else{
+            pattern = RevBlinkinLedDriver.BlinkinPattern.BLUE;
             blinkinLedDriver.setPattern(pattern);
         }
 
