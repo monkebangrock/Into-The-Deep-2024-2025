@@ -91,6 +91,8 @@ public class MainFieldCentric2024 extends LinearOpMode {
     private Servo backWrist;
     private Servo backClaw;
     private Servo rotWrist;
+    private Servo stopper1;
+    private Servo stopper2;
     int slideTarget;
     boolean slideMoving;
     int slideLevel;
@@ -115,16 +117,20 @@ public class MainFieldCentric2024 extends LinearOpMode {
     final double FRONT_CLAW_OPENED = 0.1;
     final double FRONT_CLAW_CLOSED = 0.32;
     final double BACK_CLAW_OPENED = 0.1;
-    final double BACK_CLAW_CLOSED = 0.32;
+    final double BACK_CLAW_CLOSED = 0.33;
     final int ARM_POS_UP = -225;
     final int ARM_POS_DOWN = -750;
     final int ARM_POS_TILT = -1300;
     final int SLIDES_SPECIMEN_DOWN = 0;
-    final int SLIDES_SPECIMEN_TRANSFER = 150;
+    final int SLIDES_SPECIMEN_TRANSFER = 135;
     final int SLIDES_SPECIMEN_PREP_HANG = 1000;
     final int SLIDES_SPECIMEN_HANG = 1600;
     final int SLIDES_ROBOT_HANG = 1500;
     final double FRONT_WRIST_HORIZONTAL = 0.61;
+    final double STOPPER1_DOWN = 0.7;
+    final double STOPPER2_DOWN = 0.74;    // offset seems slightly different on 2
+    final double STOPPER1_UP = 0.0;
+    final double STOPPER2_UP = 0.0;
 
 
 
@@ -147,6 +153,8 @@ public class MainFieldCentric2024 extends LinearOpMode {
         backWrist = hardwareMap.get(Servo.class, "backWrist");
         backClaw = hardwareMap.get(Servo.class, "backClaw");
         rotWrist = hardwareMap.get(Servo.class, "rotWrist");
+        stopper1 = hardwareMap.get(Servo.class, "stopper1");
+        stopper2 = hardwareMap.get(Servo.class, "stopper2");
         blinkinLedDriver = hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");
         otos = hardwareMap.get(SparkFunOTOS.class, "otos");
 
@@ -214,6 +222,10 @@ public class MainFieldCentric2024 extends LinearOpMode {
         backWrist.setPosition(0);
         backClaw.setPosition(BACK_CLAW_CLOSED);
         rotWrist.setPosition(rotWristPos);
+        stopper1.setDirection(Servo.Direction.FORWARD);
+        stopper1.setPosition(STOPPER1_DOWN);
+        stopper2.setDirection(Servo.Direction.REVERSE);
+        stopper2.setPosition(STOPPER2_DOWN);
         tongue.setPosition(0);
         otos.calibrateImu();
         otos.resetTracking();
@@ -237,9 +249,6 @@ public class MainFieldCentric2024 extends LinearOpMode {
 
         waitForStart();
         runtime.reset();
-
-        pattern = RevBlinkinLedDriver.BlinkinPattern.RED;
-        blinkinLedDriver.setPattern(pattern);
 
         leftFrontDrive.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         leftBackDrive.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
@@ -306,6 +315,7 @@ public class MainFieldCentric2024 extends LinearOpMode {
                 tiltHang();
                 backClaw();
                 rotWrist();
+                stoppers();
             }
 
             telemetry.addData("slide height", slideR.getCurrentPosition());
@@ -768,6 +778,16 @@ public class MainFieldCentric2024 extends LinearOpMode {
         }
     }
 
+    public void stoppers(){
+        if(gamepad2.left_stick_y==-1.0) {
+            stopper1.setPosition(STOPPER1_UP);
+            stopper2.setPosition(STOPPER2_UP);
+        }
+        else if(gamepad2.left_stick_y==1.0) {
+            stopper1.setPosition(STOPPER1_DOWN);
+            stopper2.setPosition(STOPPER2_DOWN);
+        }
+    }
 
     public void rotWrist(){
         if (rotWrist.getPosition() < 1 && gamepad2.left_stick_x < 0){
@@ -789,8 +809,16 @@ public class MainFieldCentric2024 extends LinearOpMode {
             pattern = RevBlinkinLedDriver.BlinkinPattern.CP1_STROBE;
             blinkinLedDriver.setPattern(pattern);
         }
-        if(runtime.seconds()<=105 && runtime.seconds()>=104){
+        else if(runtime.seconds()<=105 && runtime.seconds()>=104){
             pattern = RevBlinkinLedDriver.BlinkinPattern.SHOT_WHITE;
+            blinkinLedDriver.setPattern(pattern);
+        }
+        else if(bucketMode){
+            pattern = RevBlinkinLedDriver.BlinkinPattern.HOT_PINK;
+            blinkinLedDriver.setPattern(pattern);
+        }
+        else{
+            pattern = RevBlinkinLedDriver.BlinkinPattern.BLUE;
             blinkinLedDriver.setPattern(pattern);
         }
 
