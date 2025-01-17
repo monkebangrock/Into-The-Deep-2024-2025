@@ -122,7 +122,7 @@ public class MainFieldCentric60Speed extends LinearOpMode {
     final int ARM_POS_DOWN = -750;
     final int ARM_POS_TILT = -1300;
     final int SLIDES_SPECIMEN_DOWN = 0;
-    final int SLIDES_SPECIMEN_TRANSFER = 190;
+    final int SLIDES_SPECIMEN_TRANSFER = 150;
     final int SLIDES_SPECIMEN_PREP_HANG = 1000;
     final int SLIDES_SPECIMEN_HANG = 1600;
     final int SLIDES_ROBOT_HANG = 1500;
