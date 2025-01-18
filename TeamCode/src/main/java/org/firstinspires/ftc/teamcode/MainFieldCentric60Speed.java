@@ -118,9 +118,9 @@ public class MainFieldCentric60Speed extends LinearOpMode {
     final double FRONT_CLAW_CLOSED = 0.32;
     final double BACK_CLAW_OPENED = 0.1;
     final double BACK_CLAW_CLOSED = 0.33;
-    final int ARM_POS_UP = -225;
+    final int ARM_POS_UP = -255;
     final int ARM_POS_DOWN = -750;
-    final int ARM_POS_TILT = -1300;
+    final int ARM_POS_TILT = -1310;
     final int SLIDES_SPECIMEN_DOWN = 0;
     final int SLIDES_SPECIMEN_TRANSFER = 135;
     final int SLIDES_SPECIMEN_PREP_HANG = 1000;
@@ -219,7 +219,7 @@ public class MainFieldCentric60Speed extends LinearOpMode {
         tongue.setDirection(Servo.Direction.REVERSE);
         wrist.setPosition(0.48);
         claw.setPosition(FRONT_CLAW_OPENED);
-        backWrist.setPosition(0);
+        backWrist.setPosition(0.16);
         backClaw.setPosition(BACK_CLAW_CLOSED);
         rotWrist.setPosition(rotWristPos);
         stopper1.setDirection(Servo.Direction.FORWARD);
@@ -831,7 +831,7 @@ public class MainFieldCentric60Speed extends LinearOpMode {
                 //motor first
                 int target = SLIDES_SPECIMEN_TRANSFER;
                 backClaw.setPosition(BACK_CLAW_OPENED);
-                backWrist.setPosition(0.62);
+                backWrist.setPosition(0.75);
                 rotWrist.setPosition(FRONT_WRIST_HORIZONTAL);
                 rotWristPos = FRONT_WRIST_HORIZONTAL;
                 wrist.setPosition(0.04);
@@ -860,7 +860,7 @@ public class MainFieldCentric60Speed extends LinearOpMode {
                 sleep(300);
                 claw.setPosition(FRONT_CLAW_OPENED);
                 sleep(200);
-                backWrist.setPosition(0);
+                backWrist.setPosition(0.16);
                 depositMode = false;
                 // get slide in prep position
                 slideR.setVelocity(5000);

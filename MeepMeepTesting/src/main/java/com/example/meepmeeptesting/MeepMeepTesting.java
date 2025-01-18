@@ -17,29 +17,34 @@ public class MeepMeepTesting {
 
         RoadRunnerBotEntity myBot = new DefaultBotBuilder(meepMeep)
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
-                .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 16.5)
+                .setConstraints(30, 60, Math.toRadians(180), Math.toRadians(180), 16.5)
                 .build();
 
         myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(0, 63, Math.toRadians(90)))
                 .setTangent(-PI/2)
-                .lineToY(36) //fwd to bar
+                .lineToY(34) //fwd to bar
                 //hang specimen #1
                 .lineToY(50) //pull out from bar a bit
                 .splineToConstantHeading(new Vector2d(-40,25), -PI/2) //to blue sample
-                .splineToConstantHeading(new Vector2d(-44, 10), -PI/2) //to blue sample
-                .splineToConstantHeading(new Vector2d(-44, 48), -PI/2) //to human player zone
-                .splineToConstantHeading(new Vector2d(-44, 10), -PI/2) //to blue sample #2
-                .splineToConstantHeading(new Vector2d(-54, 12), -PI/2) //to blue sample #2
-                .splineToConstantHeading(new Vector2d(-54, 48), -PI/2) //to human player zone
-                .lineToY(45) //pull out from wall a bit
-                .splineToConstantHeading(new Vector2d(-35, 56), -PI/2) //to wall - to pick up specimen
+                .splineToConstantHeading(new Vector2d(-48, 10), -PI/2) //to blue sample
+                .lineToY(60) //to human player zone
+                                .lineToY(45)
+                //.splineToConstantHeading(new Vector2d(-54, 48), -PI/2) //to human player zone
+                //.lineToY(45) //pull out from wall a bit
+                //.splineToConstantHeading(new Vector2d(-35, 56), -PI/2) //to wall - to pick up specimen
                 //grab specimen #2
                 .splineToConstantHeading(new Vector2d(0, 34), -PI/2) //to submersible
                 //place specimen #2
                 .lineToY(45) //pull out from submersible a bit
-                .splineToConstantHeading(new Vector2d(-54, 10), -PI/2) //to blue sample #3
-                .splineToConstantHeading(new Vector2d(-61, 12), -PI/2)//to blue sample #3
-                .splineToConstantHeading(new Vector2d(-61, 48), -PI/2) //to human player zone
+                .splineToConstantHeading(new Vector2d(-44, 10), -PI/2) //to blue sample #2
+                .splineToConstantHeading(new Vector2d(-56, 12), -PI/2) //to blue sample #2
+                .lineToY(45)
+                .splineToConstantHeading(new Vector2d(0, 34), -PI/2) //to submersible
+                .splineToConstantHeading(new Vector2d(-50, 56), -PI/2) // to wall - to pick up specimen
+
+                //.splineToConstantHeading(new Vector2d(-54, 10), -PI/2) //to blue sample #3
+                //.splineToConstantHeading(new Vector2d(-61, 12), -PI/2)//to blue sample #3
+                /*.splineToConstantHeading(new Vector2d(-61, 48), -PI/2) //to human player zone
                 .lineToY(45) // pull out from submersible a bit
                 .splineToConstantHeading(new Vector2d(-35, 56), -PI/2) // to wall - to pick up specimen
                 //grab specimen #3
@@ -55,7 +60,7 @@ public class MeepMeepTesting {
                 .splineToConstantHeading(new Vector2d(-35, 56), -PI/2) // to wall - to pick up specimen
                 //grab specimen #5
                 .splineToConstantHeading(new Vector2d(0, 34), -PI/2) //to submersible
-                //place specimen #5
+                //place specimen #5*/
 
 
 
@@ -85,4 +90,5 @@ public class MeepMeepTesting {
                 .addEntity(myBot)
                 .start();
     }
+
 }
