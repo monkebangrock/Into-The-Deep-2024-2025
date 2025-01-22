@@ -121,9 +121,12 @@ public class MainFieldCentric60Speed extends LinearOpMode {
     final int ARM_POS_UP = -180;
     final int ARM_POS_DOWN = -750;
     final int ARM_POS_TILT = -1310;
+    final int SLIDES_BUCKET_DOWN = 0;
+    final int SLIDES_BUCKET_LOW = 1730;
+    final int SLIDES_BUCKET_HIGH = 3170;
     final int SLIDES_SPECIMEN_DOWN = 0;
-    final int SLIDES_SPECIMEN_TRANSFER = 525; //105
-    final int SLIDES_SPECIMEN_PREP_HANG = 1600;
+    final int SLIDES_SPECIMEN_TRANSFER = 590;
+    final int SLIDES_SPECIMEN_PREP_HANG = 1450;
     final int SLIDES_SPECIMEN_HANG = 2000;
     final int SLIDES_ROBOT_HANG = 2100;
     final double FRONT_WRIST_HORIZONTAL = 0.61;
@@ -220,12 +223,12 @@ public class MainFieldCentric60Speed extends LinearOpMode {
         wrist.setPosition(0.48);
         claw.setPosition(FRONT_CLAW_OPENED);
         backWrist.setPosition(0.14);
-        backClaw.setPosition(BACK_CLAW_CLOSED);
+        backClaw.setPosition(BACK_CLAW_OPENED);
         rotWrist.setPosition(rotWristPos);
         stopper1.setDirection(Servo.Direction.FORWARD);
-        stopper1.setPosition(STOPPER1_DOWN);
+        stopper1.setPosition(STOPPER1_UP);
         stopper2.setDirection(Servo.Direction.REVERSE);
-        stopper2.setPosition(STOPPER2_DOWN);
+        stopper2.setPosition(STOPPER2_UP);
         tongue.setPosition(0);
         otos.calibrateImu();
         otos.resetTracking();
@@ -354,22 +357,6 @@ public class MainFieldCentric60Speed extends LinearOpMode {
                 //turns off motors when at 0 position
                 slideR.setMotorDisable();
                 slideL.setMotorDisable();
-                /*  comment out the hang slides -- now using B-Button (i.e. bPressed)
-                if(gamepad2.dpad_down && slideLevel == 0){
-                    slideInput = true;
-                    slideTarget = 0;
-                    slideR.setMotorEnable();
-                    slideL.setMotorEnable();
-                    slideR.setVelocity(5000);
-                    slideL.setVelocity(5000);
-                    slideR.setTargetPosition(slideTarget);
-                    slideL.setTargetPosition(slideTarget);
-                    slideLevel = -1;
-                    telemetry.addData("level:","0");
-                    telemetry.addData("power:", "OFF");
-                    telemetry.update();
-                }
-                */
             }
             if (!slideInput){ //slide input true is dpad clicked
                 if (gamepad2.dpad_up) { //when up on dpad is pressed
@@ -380,7 +367,7 @@ public class MainFieldCentric60Speed extends LinearOpMode {
                     if(slideLevel <= 0){ //low basket
                         slideR.setVelocity(5000);
                         slideL.setVelocity(5000);
-                        slideTarget = 1870; //1360;
+                        slideTarget = SLIDES_BUCKET_LOW;
                         slideR.setTargetPosition(slideTarget);
                         slideL.setTargetPosition(slideTarget);
                         slideLevel = 1;
@@ -388,7 +375,7 @@ public class MainFieldCentric60Speed extends LinearOpMode {
                         telemetry.update();
                     }
                     else if(slideLevel == 1){
-                        slideTarget = 3170;
+                        slideTarget = SLIDES_BUCKET_HIGH;
                         slideR.setTargetPosition(slideTarget);
                         slideL.setTargetPosition(slideTarget);
                         slideLevel = 2;
@@ -399,7 +386,7 @@ public class MainFieldCentric60Speed extends LinearOpMode {
                 else if(gamepad2.dpad_down){
                     slideInput = true;
                     if(slideLevel == 2){ //low basket
-                        slideTarget = 1870; //1360;
+                        slideTarget = SLIDES_BUCKET_LOW;
                         slideR.setTargetPosition(slideTarget);
                         slideL.setTargetPosition(slideTarget);
                         slideLevel = 1;
@@ -407,7 +394,7 @@ public class MainFieldCentric60Speed extends LinearOpMode {
                         telemetry.update();
                     }
                     else if(slideLevel == 1){ //down
-                        slideTarget = 0;
+                        slideTarget = SLIDES_BUCKET_DOWN;
                         slideR.setTargetPosition(slideTarget);
                         slideL.setTargetPosition(slideTarget);
                         slideLevel = 0;
@@ -415,7 +402,7 @@ public class MainFieldCentric60Speed extends LinearOpMode {
                         telemetry.update();
                     }
                     else if(slideLevel <= 0){
-                        slideTarget = 0;
+                        slideTarget = SLIDES_BUCKET_DOWN;
                         slideR.setTargetPosition(slideTarget);
                         slideL.setTargetPosition(slideTarget);
                         slideLevel = -1;
@@ -471,7 +458,10 @@ public class MainFieldCentric60Speed extends LinearOpMode {
                         slideLevel = 1;
                         telemetry.addData("level:","1");
                         telemetry.update();
+                        stopper1.setPosition(STOPPER1_DOWN);
+                        stopper2.setPosition(STOPPER2_DOWN);
                     }
+                    /*  Specimen hang doesn't need to go to 3rd level
                     else if(slideLevel == 1){
                         slideTarget = SLIDES_SPECIMEN_HANG;
                         slideR.setTargetPosition(slideTarget);
@@ -481,10 +471,11 @@ public class MainFieldCentric60Speed extends LinearOpMode {
                         telemetry.update();
                         sleep(500);
                     }
+                    */
                 }
                 else if(gamepad2.dpad_down){
                     slideInput = true;
-                    if(slideLevel == 2){ //low basket
+                    if(slideLevel == 2){ // go to prep to hang position
                         slideTarget = SLIDES_SPECIMEN_PREP_HANG;
                         slideR.setTargetPosition(slideTarget);
                         slideL.setTargetPosition(slideTarget);
@@ -493,13 +484,19 @@ public class MainFieldCentric60Speed extends LinearOpMode {
                         telemetry.update();
                         backClaw.setPosition(BACK_CLAW_OPENED);
                     }
-                    else if(slideLevel == 1){ //down
+                    else if(slideLevel == 1){ // put specimen down onto bar
                         slideTarget = SLIDES_SPECIMEN_DOWN;
                         slideR.setTargetPosition(slideTarget);
                         slideL.setTargetPosition(slideTarget);
                         slideLevel = 0;
+                        stopper1.setPosition(STOPPER1_UP);
+                        stopper2.setPosition(STOPPER2_UP);
                         telemetry.addData("level:","0");
                         telemetry.update();
+                        while (slideR.getCurrentPosition() > 1000) {
+                            sleep(10);
+                        }
+                        backClaw.setPosition(BACK_CLAW_OPENED);
                     }
                     else if(slideLevel <= 0){
                         slideTarget = SLIDES_SPECIMEN_DOWN;
@@ -832,12 +829,6 @@ public class MainFieldCentric60Speed extends LinearOpMode {
                 backClaw.setPosition(BACK_CLAW_CLOSED);
                 int target = SLIDES_SPECIMEN_TRANSFER;
                 backWrist.setPosition(0.77);
-                /*
-                while(backWrist.getPosition() != 0.75){
-                    backClaw.setPosition(BACK_CLAW_CLOSED);
-                }
-
-                 */
                 rotWrist.setPosition(FRONT_WRIST_HORIZONTAL);
                 rotWristPos = FRONT_WRIST_HORIZONTAL;
                 wrist.setPosition(0.04);
@@ -878,7 +869,11 @@ public class MainFieldCentric60Speed extends LinearOpMode {
                 // get slide in prep position
                 slideR.setVelocity(5000);
                 slideL.setVelocity(5000);
-                slideTarget = SLIDES_SPECIMEN_PREP_HANG;
+                if (bucketMode) {
+                    slideTarget = SLIDES_BUCKET_LOW;
+                } else {
+                    slideTarget = SLIDES_SPECIMEN_PREP_HANG;
+                }
                 slideR.setTargetPosition(slideTarget);
                 slideL.setTargetPosition(slideTarget);
                 slideLevel = 1;
