@@ -115,17 +115,17 @@ public class MainFieldCentric60Speed extends LinearOpMode {
 
     // Some constant values
     final double FRONT_CLAW_OPENED = 0.1;
-    final double FRONT_CLAW_CLOSED = 0.32;
+    final double FRONT_CLAW_CLOSED = 0.31;
     final double BACK_CLAW_OPENED = 0.1;
     final double BACK_CLAW_CLOSED = 0.33;
-    final int ARM_POS_UP = -255;
+    final int ARM_POS_UP = -180;
     final int ARM_POS_DOWN = -750;
     final int ARM_POS_TILT = -1310;
     final int SLIDES_SPECIMEN_DOWN = 0;
-    final int SLIDES_SPECIMEN_TRANSFER = 135;
-    final int SLIDES_SPECIMEN_PREP_HANG = 1000;
-    final int SLIDES_SPECIMEN_HANG = 1600;
-    final int SLIDES_ROBOT_HANG = 1500;
+    final int SLIDES_SPECIMEN_TRANSFER = 525; //105
+    final int SLIDES_SPECIMEN_PREP_HANG = 1600;
+    final int SLIDES_SPECIMEN_HANG = 2000;
+    final int SLIDES_ROBOT_HANG = 2100;
     final double FRONT_WRIST_HORIZONTAL = 0.61;
     final double STOPPER1_DOWN = 0.7;
     final double STOPPER2_DOWN = 0.74;    // offset seems slightly different on 2
@@ -219,7 +219,7 @@ public class MainFieldCentric60Speed extends LinearOpMode {
         tongue.setDirection(Servo.Direction.REVERSE);
         wrist.setPosition(0.48);
         claw.setPosition(FRONT_CLAW_OPENED);
-        backWrist.setPosition(0.16);
+        backWrist.setPosition(0.14);
         backClaw.setPosition(BACK_CLAW_CLOSED);
         rotWrist.setPosition(rotWristPos);
         stopper1.setDirection(Servo.Direction.FORWARD);
@@ -380,7 +380,7 @@ public class MainFieldCentric60Speed extends LinearOpMode {
                     if(slideLevel <= 0){ //low basket
                         slideR.setVelocity(5000);
                         slideL.setVelocity(5000);
-                        slideTarget = 1450; //1360;
+                        slideTarget = 1870; //1360;
                         slideR.setTargetPosition(slideTarget);
                         slideL.setTargetPosition(slideTarget);
                         slideLevel = 1;
@@ -388,7 +388,7 @@ public class MainFieldCentric60Speed extends LinearOpMode {
                         telemetry.update();
                     }
                     else if(slideLevel == 1){
-                        slideTarget = 2750;
+                        slideTarget = 3170;
                         slideR.setTargetPosition(slideTarget);
                         slideL.setTargetPosition(slideTarget);
                         slideLevel = 2;
@@ -399,7 +399,7 @@ public class MainFieldCentric60Speed extends LinearOpMode {
                 else if(gamepad2.dpad_down){
                     slideInput = true;
                     if(slideLevel == 2){ //low basket
-                        slideTarget = 1450; //1360;
+                        slideTarget = 1870; //1360;
                         slideR.setTargetPosition(slideTarget);
                         slideL.setTargetPosition(slideTarget);
                         slideLevel = 1;
@@ -480,7 +480,6 @@ public class MainFieldCentric60Speed extends LinearOpMode {
                         telemetry.addData("level:","2");
                         telemetry.update();
                         sleep(500);
-                        backClaw.setPosition(BACK_CLAW_OPENED);
                     }
                 }
                 else if(gamepad2.dpad_down){
@@ -492,6 +491,7 @@ public class MainFieldCentric60Speed extends LinearOpMode {
                         slideLevel = 1;
                         telemetry.addData("level:","1");
                         telemetry.update();
+                        backClaw.setPosition(BACK_CLAW_OPENED);
                     }
                     else if(slideLevel == 1){ //down
                         slideTarget = SLIDES_SPECIMEN_DOWN;
@@ -829,15 +829,21 @@ public class MainFieldCentric60Speed extends LinearOpMode {
         public void run() {
             try {
                 //motor first
+                backClaw.setPosition(BACK_CLAW_CLOSED);
                 int target = SLIDES_SPECIMEN_TRANSFER;
-                backClaw.setPosition(BACK_CLAW_OPENED);
-                backWrist.setPosition(0.75);
+                backWrist.setPosition(0.77);
+                /*
+                while(backWrist.getPosition() != 0.75){
+                    backClaw.setPosition(BACK_CLAW_CLOSED);
+                }
+
+                 */
                 rotWrist.setPosition(FRONT_WRIST_HORIZONTAL);
                 rotWristPos = FRONT_WRIST_HORIZONTAL;
                 wrist.setPosition(0.04);
                 tongue.setPosition(0);
                 tonguePos = 0;
-                while ((slideR.getCurrentPosition() > (target + 10) || slideR.getCurrentPosition() < (target - 10)) && opModeIsActive()) {
+                while ((slideR.getCurrentPosition() > (target + 5) || slideR.getCurrentPosition() < (target - 5)) && opModeIsActive()) {
                     slideR.setVelocity(1000);
                     slideL.setVelocity(1000);
                     slideR.setTargetPosition(target);
@@ -847,11 +853,18 @@ public class MainFieldCentric60Speed extends LinearOpMode {
                     telemetry.addData("SlideR Tgt", slideR.getTargetPosition());
                     telemetry.update();
                 }
+                backClaw.setPosition(BACK_CLAW_OPENED);
                 armTarget = ARM_POS_UP;
                 int curPos = armHinge.getCurrentPosition();
-                while ((curPos < (ARM_POS_UP - 5) || curPos > (ARM_POS_UP + 5)) && opModeIsActive()) {
+                while ((curPos < (ARM_POS_UP - 1) || curPos > (ARM_POS_UP + 1)) && opModeIsActive()) {
                     armHinge.setMotorEnable();
-                    armHinge.setVelocity(1500);
+                    if(curPos > -300){
+                        armHinge.setVelocity(300);
+                    }
+                    else if(curPos < -400){
+                        armHinge.setVelocity(1500);
+                    }
+                    armHinge.setVelocity(800);
                     armHinge.setTargetPosition(ARM_POS_UP);
                     armMoving = true;
                     curPos = armHinge.getCurrentPosition();
@@ -860,7 +873,7 @@ public class MainFieldCentric60Speed extends LinearOpMode {
                 sleep(300);
                 claw.setPosition(FRONT_CLAW_OPENED);
                 sleep(200);
-                backWrist.setPosition(0.16);
+                backWrist.setPosition(0.14);
                 depositMode = false;
                 // get slide in prep position
                 slideR.setVelocity(5000);
@@ -886,8 +899,14 @@ public class MainFieldCentric60Speed extends LinearOpMode {
                 wrist.setPosition(0.7);
                 armTarget = ARM_POS_DOWN;
                 int curPos = armHinge.getCurrentPosition();
-                while (curPos != ARM_POS_DOWN && opModeIsActive()) {
+                while ((curPos <= ARM_POS_DOWN - 5 || curPos >= ARM_POS_DOWN + 5) && opModeIsActive()) {
                     armHinge.setMotorEnable();
+                    if(curPos>-350){
+                        armHinge.setVelocity(1600);
+                    }
+                    else{
+                        armHinge.setVelocity(250);
+                    }
                     armHinge.setVelocity(800);
                     armHinge.setTargetPosition(ARM_POS_DOWN);
                     armMoving = true;
