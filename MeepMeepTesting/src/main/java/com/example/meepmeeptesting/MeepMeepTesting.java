@@ -33,7 +33,7 @@ public class MeepMeepTesting {
                 //.lineToY(45) //pull out from wall a bit
                 //.splineToConstantHeading(new Vector2d(-35, 56), -PI/2) //to wall - to pick up specimen
                 //grab specimen #2
-                .splineToConstantHeading(new Vector2d(0, 34), -PI/2) //to submersible
+                .splineToConstantHeading(new Vector2d(0, 38), -PI/2) //to submersible
                 //place specimen #2
                 .lineToY(45) //pull out from submersible a bit
                 .splineToConstantHeading(new Vector2d(-44, 10), -PI/2) //to blue sample #2
@@ -48,16 +48,20 @@ public class MeepMeepTesting {
                 .lineToY(45) // pull out from submersible a bit
                 .splineToConstantHeading(new Vector2d(-35, 56), -PI/2) // to wall - to pick up specimen
                 //grab specimen #3
-                .lineToY(45) // pull out from wall a bit
-                .splineToConstantHeading(new Vector2d(0, 34), -PI/2) //to submersible
+                //.lineToY(45) // pull out from wall a bit
+               // .splineToConstantHeading(new Vector2d(0, 40), -PI/2) //to submersible
                 //place specimen #3
                 .lineToY(45) // pull out from submersible a bit
-                .splineToConstantHeading(new Vector2d(-35, 56), -PI/2) // to wall - to pick up specimen
-                //grab specimen #4
-                .splineToConstantHeading(new Vector2d(0, 34), -PI/2) //to submersible
+                .splineToConstantHeading(new Vector2d(-35, 56), 0) // to wall - to pick up specimen
+
+                //grab specimen #5
+
+                .splineToConstantHeading(new Vector2d(0, 34), -PI/2)//to submersible
+
+                //place specimen #5
                 //place specimen #4
                 .lineToY(45) // pull out from submersible a bit
-                .splineToConstantHeading(new Vector2d(-35, 56), -PI/2) // to wall - to pick up specimen
+                .splineToConstantHeading(new Vector2d(-39, 56), 0) // to wall - to pick up specimen
                 //grab specimen #5
                 .splineToConstantHeading(new Vector2d(0, 34), -PI/2) //to submersible
                 //place specimen #5*/
