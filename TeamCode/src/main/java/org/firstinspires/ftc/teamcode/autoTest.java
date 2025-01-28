@@ -96,6 +96,9 @@ public class autoTest extends LinearOpMode {
     private Servo wrist;
     private Servo backWrist;
     private Servo backClaw;
+    private Servo rotWrist;
+    private Servo stopper1;
+    private Servo stopper2;
     int slideTarget;
     boolean slideMoving;
     int slideLevel;
@@ -118,6 +121,23 @@ public class autoTest extends LinearOpMode {
             (WHEEL_DIAMETER_INCHES * 3.1415);
     static final double DRIVE_SPEED = 0.6;
     static final double TURN_SPEED = 0.5;
+    final double FRONT_CLAW_OPENED = 0.1;
+    final double FRONT_CLAW_CLOSED = 0.32;
+    final double BACK_CLAW_OPENED = 0.1;
+    final double BACK_CLAW_CLOSED = 0.33;
+    final int ARM_POS_UP = -225;
+    final int ARM_POS_DOWN = -750;
+    final int ARM_POS_TILT = -1310;
+    final int SLIDES_SPECIMEN_DOWN = 0;
+    final int SLIDES_SPECIMEN_TRANSFER = 135;
+    final int SLIDES_SPECIMEN_PREP_HANG = 1000;
+    final int SLIDES_SPECIMEN_HANG = 1600;
+    final int SLIDES_ROBOT_HANG = 1500;
+    final double FRONT_WRIST_HORIZONTAL = 0.61;
+    final double STOPPER1_DOWN = 0.7;
+    final double STOPPER2_DOWN = 0.74;    // offset seems slightly different on 2
+    final double STOPPER1_UP = 0.0;
+    final double STOPPER2_UP = 0.0;
 
     @Override
     public void runOpMode() {
@@ -135,19 +155,22 @@ public class autoTest extends LinearOpMode {
         wrist = hardwareMap.get(Servo.class,"wrist");
         backWrist = hardwareMap.get(Servo.class, "backWrist");
         backClaw = hardwareMap.get(Servo.class, "backClaw");
+        rotWrist = hardwareMap.get(Servo.class, "rotWrist");
+        stopper1 = hardwareMap.get(Servo.class, "stopper1");
+        stopper2 = hardwareMap.get(Servo.class, "stopper2");
         IMU imu = hardwareMap.get(IMU.class, "imu");
         blinkinLedDriver = hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");
 
-        /*reset encoder
-        leftFront.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        //reset encoder
+        /*leftFront.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         leftBack.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         rightFront.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         rightBack.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);*/
         slideR.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         slideL.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         armHinge.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        /*brake motors
-        leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        //brake motors
+        /*leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);*/
@@ -182,10 +205,17 @@ public class autoTest extends LinearOpMode {
         armHinge.setDirection(DcMotorSimple.Direction.REVERSE);
         wrist.setDirection(Servo.Direction.REVERSE);
         backWrist.setDirection(Servo.Direction.REVERSE);
-        wrist.setPosition(0);
-        claw.setPosition(0.2);
-        backWrist.setPosition(0);
-        backClaw.setPosition(0);
+        tongue.setDirection(Servo.Direction.REVERSE);
+        wrist.setPosition(0.48);
+        claw.setPosition(FRONT_CLAW_OPENED);
+        backWrist.setPosition(0.16);
+        backClaw.setPosition(BACK_CLAW_CLOSED);
+        rotWrist.setPosition(0.61);
+        stopper1.setDirection(Servo.Direction.FORWARD);
+        stopper1.setPosition(STOPPER1_DOWN);
+        stopper2.setDirection(Servo.Direction.REVERSE);
+        stopper2.setPosition(STOPPER2_DOWN);
+        tongue.setPosition(0);
 
         /*leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -211,41 +241,48 @@ public class autoTest extends LinearOpMode {
         SparkFunOTOSDrive drive = new SparkFunOTOSDrive(hardwareMap, initialPose);
 
         int visionOutputPosition = 1;
-        TrajectoryActionBuilder tab1 = drive.actionBuilder(initialPose)
+        TrajectoryActionBuilder tab1 = drive.actionBuilder(initialPose) //place preloaded specimen (#1)
                 .setTangent(-PI/2)
-                .lineToY(40) //fwd to bar
+                .stopAndAdd(this::slideUp)
+                .lineToY(34) //fwd to bar
                 //hang specimen #1
-                .lineToY(50) //pull out from bar a bit
-                .splineToConstantHeading(new Vector2d(-36,25), -PI/2) //to blue sample
-                .splineToConstantHeading(new Vector2d(-44, 10), PI/2) //to blue sample
-                .splineToConstantHeading(new Vector2d(-45, 46), -PI/2) //to human player zone
-                .splineToConstantHeading(new Vector2d(-48, 10), -PI/2) //to blue sample #2
-                .splineToConstantHeading(new Vector2d(-52, 12), -PI/2) //to blue sample #2
-                .splineToConstantHeading(new Vector2d(-55, 48), -PI/2) //to human player zone
-                //.lineToY(45) //pull out from wall a bit
-                .splineToConstantHeading(new Vector2d(-35, 53), -PI/2) //to wall - to pick up specimen
-                //grab specimen #2
-                .splineToConstantHeading(new Vector2d(0, 35), -PI/2) //to submersible
-                //place specimen #2
+                .stopAndAdd(this::specimenHang)
+                .splineToConstantHeading(new Vector2d(-48, 45), -PI/2)
+                .stopAndAdd(this::slideDown)
+                .lineToY(54)
+                .stopAndAdd(this::grab)
+                .waitSeconds(0.2)
+                .stopAndAdd(this::transfer)
+                .splineToConstantHeading(new Vector2d(-3, 34), -(5*PI)/6)
+                .stopAndAdd(this::specimenHang)
+                .splineToConstantHeading(new Vector2d(-55, 60), 0)
+                .stopAndAdd(this::ending)
+                .stopAndAdd(this::slideDown);
+                /*.lineToY(50) //pull out from bar a bit
+                .splineToConstantHeading(new Vector2d(-35,25), -PI/2) //to blue sample
+                .splineToConstantHeading(new Vector2d(-42, 10), -PI/2) //to blue sample
+                .lineToY(60) //to human player zone
+                //grab specimen
+                .stopAndAdd(this::grab)
+                .lineToY(45)
+                .splineToConstantHeading(new Vector2d(0, 34), -PI/2) //to submersible
+                //hang specimen
+                .stopAndAdd(this::specimenHang)
                 .lineToY(45) //pull out from submersible a bit
-                //.splineToConstantHeading(new Vector2d(-54, 12), -PI/2)//to blue sample #3
-                // .splineToConstantHeading(new Vector2d(-58, 42), PI/2) //to human player zone
-                .splineToConstantHeading(new Vector2d(-39, 53), PI/4) // to wall - to pick up specimen
-                //grab specimen #3
-                //.lineToY(45) // pull out from wall a bit
-                .splineToConstantHeading(new Vector2d(0, 40), -PI/2) //to submersible
-                //place specimen #3
-                .lineToY(45) // pull out from submersible a bit
-                .splineToConstantHeading(new Vector2d(-39, 53), 0) // to wall - to pick up specimen
-                //grab specimen #4
-                .waitSeconds(3)
-                .splineToConstantHeading(new Vector2d(0, 44), -PI/2) //to submersible
-                //place specimen #4
-                .lineToY(45) // pull out from submersible a bit
-                .splineToConstantHeading(new Vector2d(-39, 53), 0) // to wall - to pick up specimen
-                //grab specimen #5
-                .splineToConstantHeading(new Vector2d(0, 40), -PI/2);//to submersible
-        //place specimen #5
+                .splineToConstantHeading(new Vector2d(-44, 10), -PI/2) //to blue sample #2
+                .splineToConstantHeading(new Vector2d(-56, 12), -PI/2) //to blue sample #2
+                //grab specimen
+                .stopAndAdd(this::grab)
+                .lineToY(45)
+                .splineToConstantHeading(new Vector2d(0, 34), -PI/2); //to submersible
+*/
+        //hang spec
+
+
+        TrajectoryActionBuilder tab6 = drive.actionBuilder(initialPose)
+                .splineToConstantHeading(new Vector2d(-50, 56), -PI/2); // to wall - to pick up specimen
+
+
         waitForStart();
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
@@ -266,35 +303,35 @@ public class autoTest extends LinearOpMode {
     }
 
 
-    public void slide(int lvl) {
-        if (lvl == 1) {
-            while (slideR.getCurrentPosition() < 2750 && opModeIsActive()) {
+    public void slideUp() {
+            while (slideR.getCurrentPosition() < 900 && opModeIsActive()) {
                 slideR.setVelocity(3000);
                 slideL.setVelocity(3000);
-                slideR.setTargetPosition(2750);
-                slideL.setTargetPosition(2750);
+                slideR.setTargetPosition(900);
+                slideL.setTargetPosition(900);
             }
-        } else {
-            while (slideR.getCurrentPosition() > 0 && opModeIsActive()) {
-                slideR.setVelocity(3000);
-                slideL.setVelocity(3000);
-                slideR.setTargetPosition(0);
-                slideL.setTargetPosition(0);
-                if (slideR.getCurrentPosition() < 30) {
-                    slideR.setVelocity(0);
-                    slideL.setVelocity(0);
-                }
-            }
+    }
+
+    public void slideDown() {
+        while (slideR.getCurrentPosition() > 0 && opModeIsActive()) {
+            slideR.setVelocity(3000);
+            slideL.setVelocity(3000);
+            slideR.setTargetPosition(0);
+            slideL.setTargetPosition(0);
         }
     }
 
     public void specimenHang(){
-        while (slideR.getCurrentPosition() < 1240 && opModeIsActive()) {
+        while (slideR.getCurrentPosition() < 1550 && opModeIsActive()) {
             slideR.setVelocity(3000);
             slideL.setVelocity(3000);
-            slideR.setTargetPosition(1240);
-            slideL.setTargetPosition(1240);
+            backClaw.setPosition(0.33);
+            slideR.setTargetPosition(1550);
+            slideL.setTargetPosition(1550);
+            sleep(400);
         }
+        backClaw.setPosition(0.1);
+
     }
 
     public void arm(int ticks) {
@@ -319,44 +356,70 @@ public class autoTest extends LinearOpMode {
     }
 
     public void transfer() { //fix
-        //motor first
-        telemetry.addData("Sdlie r", slideR.getCurrentPosition());
-        telemetry.addData("tgt", slideR.getTargetPosition());
-        telemetry.update();
-        while ((slideR.getCurrentPosition() > 210 || slideR.getCurrentPosition() < 190) && opModeIsActive()) {
+        int target = 190;
+        backClaw.setPosition(0.1);
+        backWrist.setPosition(0.75);
+        rotWrist.setPosition(0.61);
+        wrist.setPosition(0.04);
+        tongue.setPosition(0);
+        while ((slideR.getCurrentPosition() > (target + 10) || slideR.getCurrentPosition() < (target - 10)) && opModeIsActive()) {
             slideR.setVelocity(1000);
             slideL.setVelocity(1000);
-            slideR.setTargetPosition(200);
-            slideL.setTargetPosition(200);
+            slideR.setTargetPosition(target);
+            slideL.setTargetPosition(target);
             slideLevel = 0;
+            telemetry.addData("SlideR Pos", slideR.getCurrentPosition());
+            telemetry.addData("SlideR Tgt", slideR.getTargetPosition());
+            telemetry.update();
         }
-        while (armHinge.getCurrentPosition() < -90 && opModeIsActive()) {
-            armHinge.setTargetPosition(-90);
+        armTarget = -245;
+        int curPos = armHinge.getCurrentPosition();
+        while ((curPos < (-245 - 5) || curPos > (-245 + 5)) && opModeIsActive()) {
+            armHinge.setMotorEnable();
+            armHinge.setVelocity(1500);
+            armHinge.setTargetPosition(-245);
             armMoving = true;
+            curPos = armHinge.getCurrentPosition();
         }
-        while (wrist.getPosition() != 0 && opModeIsActive()) {
-            wrist.setPosition(0);
-        }
-        sleep(250);
-        claw.setPosition(0.2);
+        backClaw.setPosition(0.32);
+        sleep(300);
+        claw.setPosition(0.1);
+        sleep(300);
+        backWrist.setPosition(0.16);
+        // get slide in prep position
+        slideR.setVelocity(5000);
+        slideL.setVelocity(5000);
+        slideTarget = 900;
+        slideR.setTargetPosition(slideTarget);
+        slideL.setTargetPosition(slideTarget);
+        slideLevel = 1;
     }
 
     public void grab() {
-        claw.setPosition(0.2);
-        sleep(300);
-        wrist.setPosition(0.62);
-        armHinge.setVelocity(1000);
-        armHinge.setTargetPosition(-550);
-        armHinge.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        while (armHinge.getCurrentPosition() > -545 && opModeIsActive()) {
-            armHinge.setVelocity(1000);
+        tongue.setPosition(0);
+        claw.setPosition(0.1);
+        wrist.setPosition(0.7);
+        armTarget = -810;
+        int curPos = armHinge.getCurrentPosition();
+        while (curPos >= -810 && opModeIsActive()) {
+            armHinge.setMotorEnable();
+            armHinge.setVelocity(800);
+            armHinge.setTargetPosition(-810);
+            armMoving = true;
+            curPos = armHinge.getCurrentPosition();
         }
-        claw.setPosition(0.55);
-        sleep(500);
+        sleep(200);
+        claw.setPosition(0.32);
     }
 
-    public void tongue(int pwr) { //-1 is out, 1 is in
-        tongue.setPosition(0);
+    public void ending(){
+        wrist.setPosition(0);
+        stopper1.setPosition(0);
+        stopper2.setPosition(0);
+    }
+
+    public void tongue(int pos) { //-1 is out, 1 is in
+        tongue.setPosition(pos);
     }
 
     public void claw(double pos) { //0.2 is open, 0.55 is closed
