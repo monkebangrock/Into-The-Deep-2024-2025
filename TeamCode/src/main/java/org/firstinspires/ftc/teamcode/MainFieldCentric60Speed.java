@@ -27,20 +27,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode;
-
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
@@ -124,9 +121,9 @@ public class MainFieldCentric60Speed extends LinearOpMode {
     final int ARM_POS_TILT = -1310;
     final int SLIDES_BUCKET_DOWN = 0;
     final int SLIDES_BUCKET_LOW = 1730;
-    final int SLIDES_BUCKET_HIGH = 3170;
-    final int SLIDES_SPECIMEN_DOWN = 0;
-    final int SLIDES_SPECIMEN_TRANSFER = 590;
+    final int SLIDES_BUCKET_HIGH = 3100;
+    final int SLIDES_SPECIMEN_DOWN = 100;
+    final int SLIDES_SPECIMEN_TRANSFER = 640;
     final int SLIDES_SPECIMEN_PREP_HANG = 1450;
     final int SLIDES_ROBOT_HANG = 1450;
     final double FRONT_WRIST_HORIZONTAL = 0.61;
@@ -220,16 +217,8 @@ public class MainFieldCentric60Speed extends LinearOpMode {
         wrist.setDirection(Servo.Direction.REVERSE);
         backWrist.setDirection(Servo.Direction.REVERSE);
         tongue.setDirection(Servo.Direction.REVERSE);
-        wrist.setPosition(0.48);
-        claw.setPosition(FRONT_CLAW_OPENED);
-        backWrist.setPosition(0.14);
-        backClaw.setPosition(BACK_CLAW_OPENED);
-        rotWrist.setPosition(rotWristPos);
         stopper1.setDirection(Servo.Direction.FORWARD);
-        stopper1.setPosition(STOPPER1_UP);
         stopper2.setDirection(Servo.Direction.REVERSE);
-        stopper2.setPosition(STOPPER2_UP);
-        tongue.setPosition(0);
         otos.calibrateImu();
         otos.resetTracking();
         SparkFunOTOS.Pose2D currentPosition = new SparkFunOTOS.Pose2D(0, 0, 0);
@@ -252,7 +241,14 @@ public class MainFieldCentric60Speed extends LinearOpMode {
 
         waitForStart();
         runtime.reset();
-
+        wrist.setPosition(0.48);
+        claw.setPosition(FRONT_CLAW_OPENED);
+        backWrist.setPosition(0.14);
+        backClaw.setPosition(BACK_CLAW_OPENED);
+        rotWrist.setPosition(rotWristPos);
+        stopper1.setPosition(STOPPER1_UP);
+        stopper2.setPosition(STOPPER2_UP);
+        tongue.setPosition(0);
         leftFrontDrive.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         leftBackDrive.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         rightFrontDrive.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
@@ -687,7 +683,7 @@ public class MainFieldCentric60Speed extends LinearOpMode {
                     }
 
                     // Retract the slides -- hang the robot
-                    slideTarget = SLIDES_SPECIMEN_DOWN;
+                    slideTarget = 0;
                     slideR.setTargetPosition(slideTarget);
                     slideL.setTargetPosition(slideTarget);
                     slideLevel = 0;
